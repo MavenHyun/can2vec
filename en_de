@@ -1,0 +1,62 @@
+import tensorflow as tf
+# NumPy is often used to load, manipulate and preprocess data.
+import numpy as np
+import pandas as pd
+
+num_hnode1 = 300
+num_hnode2 = 300
+df = pd.read_csv('ACC_features.tsv', '\t')
+df.fillna(0, inplace=True)
+
+
+raw_input = df.values[:,1:92]
+X = np.array(raw_input).transpose()
+
+input = tf.placeholder("float", [91, 18872])
+y = tf.placeholder("float", [91, 18872])
+
+weights = {
+    'h1_encode_weights': tf.Variable(tf.random_normal([18872, num_hnode1])),
+    'h2_encode_weights' : tf.Variable(tf.random_normal([num_hnode1, num_hnode1])),
+    'h3_encode_weights' : tf.Variable(tf.random_normal([num_hnode1, num_hnode1])),
+    'h1_decode_weights': tf.Variable(tf.random_normal([num_hnode1, num_hnode1])),
+    'h2_decode_weights': tf.Variable(tf.random_normal([num_hnode1, num_hnode1])),
+    'h3_decode_weights': tf.Variable(tf.random_normal([num_hnode1, 18872]))
+    }
+bias = {
+    'h1_encode_bias': tf.Variable(tf.random_normal([num_hnode1])),
+    'h2_encode_bias' : tf.Variable(tf.random_normal([num_hnode1])),
+    'h3_encode_bias' : tf.Variable(tf.random_normal([num_hnode1])),
+    'h1_decode_bias': tf.Variable(tf.random_normal([num_hnode1])),
+    'h2_decode_bias': tf.Variable(tf.random_normal([num_hnode1])),
+    'h3_decode_bias': tf.Variable(tf.random_normal([18872]))
+    }
+def mEncoder(x):
+    hidden1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['h1_encode_weights']), bias['h1_encode_bias']))
+    hidden2 = tf.nn.sigmoid(tf.add(tf.matmul(hidden1, weights['h2_encode_weights']), bias['h2_encode_bias']))
+    hidden3 = tf.nn.sigmoid(tf.add(tf.matmul(hidden2, weights['h3_encode_weights']), bias['h3_encode_bias']))
+    return hidden3
+
+
+def mdecoder(x):
+    hidden1 = tf.nn.sigmoid(tf.add(tf.matmul(x, weights['h1_decode_weights']), bias['h1_decode_bias']))
+    hidden2 = tf.nn.sigmoid(tf.add(tf.matmul(hidden1, weights['h2_decode_weights']), bias['h2_decode_bias']))
+    hidden3 = tf.nn.sigmoid(tf.add(tf.matmul(hidden2, weights['h3_decode_weights']), bias['h3_decode_bias']))
+    return hidden3
+
+encoder_output = mEncoder(input)
+decoder_output = mdecoder(encoder_output)
+predicted_y = decoder_output
+
+cost = tf.reduce_mean(tf.pow(y - predicted_y, 2))
+optimizer = tf.train.GradientDescentOptimizer(0.001).minimize(cost)
+
+init = tf.initialize_all_variables()
+sess = tf.Session()
+sess.run(init)
+
+
+iter = 0
+for iter in range(1000):
+    result, cost_value = sess.run([y, cost], feed_dict={input: X, y: X})
+    print(iter,  " cost is ", cost_value)
