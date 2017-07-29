@@ -3,7 +3,73 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 import statistics as st
-import math
+
+class basic_ae:
+
+    def __init__(self, h, lr):
+        self.num_hnodes = h
+        self.rate_learning = lr
+
+    def data_preprocess(self, file_name, file_name2):
+        df = pd.read_csv(file_name, '\t')
+        df.fillna(0, inplace=True)
+        self.X, self.X_categ, self.X_mut, self.X_CNV, self.X_mRNA = np.array(df.values[:18872, 1:]).transpose(), \
+                                                            np.array(df.values[:19, 1:]).transpose(), \
+                                                            np.array(df.values[19:128, 1:]).transpose(), \
+                                                            np.array(df.values[128:2348, 1:]).transpose(), \
+                                                            np.array(df.values[2348:18872, 1:]).transpose()
+
+        mean, stdv = st.mean(self.X_categ[:, 0]), st.stdev(self.X_categ[:, 0])
+        for i in range(self.X_categ.shape[0]):
+            self.X_categ[i, 0] = (self.X_categ[i, 0] - mean) / stdv
+
+        for i in range(self.X_mRNA.shape[1]):
+            mean, stdv = st.mean(self.X_mRNA[:, i]), st.stdev(self.X_mRNA[:, i])
+            if (stdv != 0):
+                for j in range(self.X_mRNA.shape[0]):
+                    self.X_mRNA[j, i] = (self.X_mRNA[j, i] - mean) / stdv
+
+        df = pd.read_csv(file_name2, '\t')
+        raw_input = df.values[:, 1:]
+        self.Y = np.array(raw_input).transpose()
+
+    def data_training(self):
+        input_categ = tf.placeholder("float", [self.X_categ.shape[0], self.X_categ.shape[1]])
+        input_mut = tf.placeholder("float", [self.X_mut.shape[0], self.X_mut.shape[1]])
+        input_CNV = tf.placeholder("float", [self.X_CNV.shape[0], self.X_CNV.shape[1]])
+        input_mRNA = tf.placeholder("float", [self.X_mRNA.shape[0], self.X_mRNA.shape[1]])
+        input_surviv = tf.placeholder("float", [self.Y.shape[0], self.Y.shape[1]])
+
+        weights = {
+            'W_enc': tf.Variable(tf.random_normal([self.X.shape[1] + self.Y.shape[1], self.num_hnodes])),
+            'W_dec': tf.Variable(tf.random_normal([self.num_hnodes, self.X.shape[1] + self.Y.shape[1]]))
+        }
+        bias = {
+            'B_enc': tf.Variable(tf.random_normal([self.num_hnodes])),
+            'B_dec': tf.Variable(tf.random_normal([self.X.shape[1] + self.Y.shape[1]]))
+        }
+
+        input = tf.concat([input_categ, input_mut, input_CNV, input_mRNA, input_surviv], 1)
+        hidden = tf.nn.sigmoid(tf.add(tf.matmul(input, weights['W_enc']), bias['B_enc']))
+        output = tf.nn.sigmoid(tf.add(tf.matmul(hidden, weights['W_dec']), bias['B_dec']))
+        cost = tf.reduce_mean(tf.pow(input - output, 2))
+        optimizer = tf.train.RMSPropOptimizer(self.rate_learning).minimize(cost)
+
+        init = tf.global_variables_initializer()
+        sess = tf.Session()
+        sess.run(init)
+
+        for iter in range(5000):
+            cost_value, _= sess.run(
+                [cost, optimizer],
+                feed_dict={input_categ: self.X_categ,
+                           input_mut: self.X_mut,
+                           input_CNV: self.X_CNV,
+                           input_mRNA: self.X_mRNA,
+                           input_surviv: self.Y})
+            if (iter % 100 == 0):
+                print(iter, "\tCost value is ", cost_value)
+
 
 class practice_autoencoder:
 
@@ -113,7 +179,7 @@ class practice_autoencoder:
            if (iter % 100 == 0):
                print(iter,  "\tMutation Data\t", cost1, "\tCNV Data\t", cost2, "\tmRNA Data\t", cost3)
 
-test = practice_autoencoder(20, 20, 75, 75, 300, 300, 0.80, 0.80, 0.80)
+test = basic_ae(300, 0.8)
 test.data_preprocess('ACC_features.tsv', 'ACC_survival.tsv')
 test.data_training()
 
