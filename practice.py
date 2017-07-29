@@ -312,7 +312,7 @@ class multi_ae:
                #print(iter,  "\tMutation Data\t", cost1, "\tCNV Data\t", cost2, "\tmRNA Data\t", cost3, "\tSurvivability\t", cost4)
                print(iter, "cost is ", cost_value)
 
-test = multi_ae(20, 100, 500, 0.99, True)
+test = multi_ae(20, 100, 500, 0.80, True)
 test.data_training('ACC_features.tsv', 'ACC_survival.tsv')
 
 
