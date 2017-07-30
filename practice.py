@@ -195,13 +195,6 @@ class stacked_ae:
             if (iter % 100 == 0):
                 print(iter, "\tCost value is ", cost_value)
 
-
-
-
-
-
-
-
 class multi_ae:
 
     def __init__(self, h1, h2, h3, lr, dn):
@@ -285,14 +278,14 @@ class multi_ae:
         feature = tf.concat([input_categ, hidden_mut, hidden_CNV, hidden_mRNA, input_surviv], 1)
         hidden = tf.nn.sigmoid(tf.add(tf.matmul(feature, weights['W_dec']), bias['B_dec']))
         hidden0, output = tf.split(hidden, [self.Z.shape[1] - 1, 1], 1)
-        '''
+
         cost_mut = tf.reduce_mean(tf.pow(input_mut - output_mut, 2))
         optimizer_mut = tf.train.RMSPropOptimizer(self.rate_learning).minimize(cost_mut)
         cost_CNV = tf.reduce_mean(tf.pow(input_CNV - output_CNV, 2))
         optimizer_CNV = tf.train.RMSPropOptimizer(self.rate_learning).minimize(cost_CNV)
         cost_mRNA = tf.reduce_mean(tf.pow(input_mRNA - output_mRNA, 2))
         optimizer_mRNA = tf.train.RMSPropOptimizer(self.rate_learning).minimize(cost_mRNA)
-        '''
+
 
 
         cost_surviv = tf.reduce_mean(tf.pow(answer - output, 2))
@@ -302,15 +295,18 @@ class multi_ae:
         sess = tf.Session()
         sess.run(init)
 
-        for iter in range(5000):
-           #cost1, cost2, cost3, cost4, _, _, _, _ = sess.run([cost_mut, cost_CNV, cost_mRNA, cost_surviv, optimizer_mut, optimizer_CNV, optimizer_mRNA,  optimizer_surviv],
-           cost_value, _ = sess.run([cost_surviv, optimizer_surviv],
+        for iter in range(5001):
+           cost1, cost2, cost3, _, _, _ = sess.run([cost_mut, cost_CNV, cost_mRNA, optimizer_mut, optimizer_CNV, optimizer_mRNA],
                                     feed_dict={input_categ: self.X_categ, input_mut: self.X_mut,
-                                               input_CNV: self.X_CNV, input_mRNA: self.X_mRNA,
-                                               input_surviv: self.Y, answer: self.Z})
-           if (iter % 100 == 0):
-               #print(iter,  "\tMutation Data\t", cost1, "\tCNV Data\t", cost2, "\tmRNA Data\t", cost3, "\tSurvivability\t", cost4)
-               print(iter, "cost is ", cost_value)
+                                               input_CNV: self.X_CNV, input_mRNA: self.X_mRNA})
+           if iter % 100 == 0:
+               print(iter,  "\tMutation Data\t", cost1, "\tCNV Data\t", cost2, "\tmRNA Data\t", cost3)
+
+        for iter in range(5001):
+            cost, _ = sess.run([cost_surviv, optimizer_surviv],
+                               feed_dict={input_categ: self.X_categ, input_mut: self.X_mut,
+                                          input_CNV: self.X_CNV, input_mRNA: self.X_mRNA,
+                                          input_surviv: self.Y, answer: self.Z})
 
 test = multi_ae(20, 100, 500, 0.80, True)
 test.data_training('ACC_features.tsv', 'ACC_survival.tsv')
