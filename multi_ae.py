@@ -4,49 +4,12 @@ import numpy as np
 import pandas as pd
 import statistics as st
 
-class split_ae:
-    def __init__(self, a, h, lr):
-        self.X = a
-        self.num_hnodes = h
-        self.rate_learning = lr
+class train_set:
+    def __init__(self, fn, fn2):
+        self.file_name, self.file_name2 = fn, fn2
         
-    def pretrain(self):
-        x = tf.placeholder("float", [self.X.shape[0], self.X.shape[1]])
-        self.weights = {
-            'W_enc': tf.Variable(tf.random_normal([self.X.shape[1], self.num_hnodes])),
-            'W_dec': tf.Variable(tf.random_normal([self.num_hnodes, self.X.shape[1]]))
-        }
-        self.bias = {
-            'B_enc': tf.Variable(tf.random_normal([self.num_hnodes])),
-            'B_dec': tf.Variable(tf.random_normal([self.X.shape[1]]))
-        }
-        self.hidden = tf.nn.sigmoid(tf.add(tf.matmul(x, self.weights['W_enc']), self.bias['B_enc']))
-        y = tf.nn.sigmoid(tf.add(tf.matmul(self.hidden, self.weights['W_dec']), self.bias['B_dec']))
-        cost = tf.reduce_mean(
-            tf.pow(x - y, 2))
-        opt = tf.train.RMSPropOptimizer(self.rate_learning).minimize(cost)
-        init = tf.global_variables_initializer()
-        sess = tf.Session()
-        sess.run(init)
-        for iter in range(1001):
-            _, _ = sess.run(
-                [cost, opt],
-                feed_dict={x: self.X})
-        print("Optimization done!")
-
-    def get_H(self):
-        return self.hidden
-    
-
-class multi_ae:
-    def __init__(self, h1, h2, h3, lr):
-        self.num_hnodes_mut = h1
-        self.num_hnodes_CNV = h2
-        self.num_hnodes_mRNA = h3
-        self.rate_learning = lr
-
-    def data_preprocess(self, file_name, file_name2):
-        df = pd.read_csv(file_name, '\t')
+    def data_preprocess(self):
+        df = pd.read_csv(self.file_name, '\t')
         df.fillna(0, inplace=True)
 
         self.X, self.X_categ, self.X_mut, self.X_CNV, self.X_mRNA = np.array(df.values[:18872, 1:]).transpose(), \
@@ -63,45 +26,113 @@ class multi_ae:
                 for j in range(self.X_mRNA.shape[0]):
                     self.X_mRNA[j, i] = (self.X_mRNA[j, i] - mean) / stdv
 
-        df = pd.read_csv(file_name2, '\t')
+        df = pd.read_csv(self.file_name2, '\t')
         raw_input = df.values[:, 1:]
         self.Y = np.array(raw_input).transpose()
         mean, stdv = st.mean(self.Y[:, 0]), st.stdev(self.Y[:, 0])
         for i in range(self.Y.shape[0]):
             self.Y[i, 0] = (self.Y[i, 0] - mean) / stdv
-        self.num_hnodes = self.num_hnodes_mut + self.num_hnodes_CNV + self.num_hnodes_mRNA + 10
+
         self.Z = np.concatenate((self.X, self.Y), 1)
 
-    def data_training(self, file_name, file_name2):
-        self.data_preprocess(file_name, file_name2)
-        input_categ = tf.placeholder("float", [self.X_categ.shape[0], self.X_categ.shape[1]])
-        input_mut = tf.placeholder("float", [self.X_mut.shape[0], self.X_mut.shape[1]])
-        input_CNV = tf.placeholder("float", [self.X_CNV.shape[0], self.X_CNV.shape[1]])
-        input_mRNA = tf.placeholder("float", [self.X_mRNA.shape[0], self.X_mRNA.shape[1]])
-        input_surviv = tf.placeholder("float", [self.Y.shape[0], self.Y.shape[1]])
-        answer = tf.placeholder("float", [self.Z.shape[0], self.Z.shape[1]])
+class multi_ae:
+    def __init__(self, set, h1, h2, h3, h4, lr):
+        self.rate_learning = lr
+        self.X, self.Y, self.Z = set.X, set.Y, set.Z
+        self.X_categ, self.X_mut, self.X_CNV, self.X_mRNA = set.X_categ, set.X_mut, set.X_CNV, set.X_mRNA
+        self.h_categ, self.h_mut, self.h_CNV, self.h_mRNA = h1, h2, h3, h4
+        self.h = h1 + h2 + h3 + h4
 
-        split_categ = split_ae(self.X_categ, 10, 0.80)
-        split_mut = split_ae(self.X_mut, self.num_hnodes_mut, 0.80)
-        split_CNV = split_ae(self.X_CNV, self.num_hnodes_CNV, 0.80)
-        split_mRNA = split_ae(self.X_mRNA, self.num_hnodes_mRNA, 0.80)
-        split_categ.pretrain(), split_mut.pretrain(), split_CNV.pretrain(), split_mRNA.pretrain()
+    def tf_construct(self, set):
+        self.input_categ = tf.placeholder("float", [set.X_categ.shape[0], set.X_categ.shape[1]])
+        self.input_mut = tf.placeholder("float", [set.X_mut.shape[0], set.X_mut.shape[1]])
+        self.input_CNV = tf.placeholder("float", [set.X_CNV.shape[0], set.X_CNV.shape[1]])
+        self.input_mRNA = tf.placeholder("float", [set.X_mRNA.shape[0], set.X_mRNA.shape[1]])
+        self.input_surviv = tf.placeholder("float", [set.Y.shape[0], set.Y.shape[1]])
+        self.weights = {
+            'W_categ_enc': tf.Variable(tf.random_normal([self.X_categ.shape[1], self.h_categ])),
+            'W_mut_enc': tf.Variable(tf.random_normal([self.X_mut.shape[1], self.h_mut])),
+            'W_CNV_enc': tf.Variable(tf.random_normal([self.X_CNV.shape[1], self.h_CNV])),
+            'W_mRNA_enc': tf.Variable(tf.random_normal([self.X_mRNA.shape[1], self.h_mRNA])),
+            'W_enc': tf.Variable(tf.random_normal([self.X.shape[1], self.h])),
+            'W_categ_dec': tf.Variable(tf.random_normal([self.h_categ, self.X_categ.shape[1]])),
+            'W_mut_dec': tf.Variable(tf.random_normal([self.h_mut, self.X_mut.shape[1]])),
+            'W_CNV_dec': tf.Variable(tf.random_normal([self.h_CNV, self.X_CNV.shape[1]])),
+            'W_mRNA_dec': tf.Variable(tf.random_normal([self.h_mRNA, self.X_mRNA.shape[1]])),
+            'W_dec': tf.Variable(tf.random_normal([self.h, self.Z.shape[1]]))
+        }
+        self.bias = {
+            'B_categ_enc': tf.Variable(tf.random_normal([self.h_categ])),
+            'B_mut_enc': tf.Variable(tf.random_normal([self.h_mut])),
+            'B_CNV_enc': tf.Variable(tf.random_normal([self.h_CNV])),
+            'B_mRNA_enc': tf.Variable(tf.random_normal([self.h_mRNA])),
+            'B_enc': tf.Variable(tf.random_normal([self.h])),
+            'B_categ_dec': tf.Variable(tf.random_normal([self.X_categ.shape[1]])),
+            'B_mut_dec': tf.Variable(tf.random_normal([self.X_mut.shape[1]])),
+            'B_CNV_dec': tf.Variable(tf.random_normal([self.X_CNV.shape[1]])),
+            'B_mRNA_dec': tf.Variable(tf.random_normal([self.X_mRNA.shape[1]])),
+            'B_dec': tf.Variable(tf.random_normal([self.Z.shape[1]]))
+        }
+        self.hiddens = {
+            'H_categ': tf.nn.sigmoid(tf.add(tf.matmul(self.input_categ, self.weights['W_categ_enc']), self.bias['B_categ_enc'])),
+            'H_mut': tf.nn.sigmoid(tf.add(tf.matmul(self.input_mut, self.weights['W_mut_enc']), self.bias['B_mut_enc'])),
+            'H_CNV': tf.nn.sigmoid(tf.add(tf.matmul(self.input_CNV, self.weights['W_CNV_enc']), self.bias['B_CNV_enc'])),
+            'H_mRNA': tf.nn.sigmoid(tf.add(tf.matmul(self.input_mRNA, self.weights['W_mRNA_enc']), self.bias['B_mRNA_enc']))
+        }
+        self.outputs = {
+            'output_categ': tf.nn.sigmoid(tf.add(tf.matmul(self.hiddens['H_categ'], self.weights['W_categ_dec']), self.bias['B_categ_dec'])),
+            'output_mut': tf.nn.sigmoid(tf.add(tf.matmul(self.hiddens['H_mut'], self.weights['W_mut_dec']), self.bias['B_mut_dec'])),
+            'output_CNV': tf.nn.sigmoid(tf.add(tf.matmul(self.hiddens['H_CNV'], self.weights['W_CNV_dec']), self.bias['B_CNV_dec'])),
+            'output_mRNA': tf.nn.sigmoid(tf.add(tf.matmul(self.hiddens['H_mRNA'], self.weights['W_mRNA_dec']), self.bias['B_mRNA_dec']))
+        }
+        self.costs = {
+            'cost_categ': tf.reduce_mean(tf.pow(self.input_categ - self.outputs['output_categ'], 2)),
+            'cost_mut': tf.reduce_mean(tf.pow(self.input_mut - self.outputs['output_mut'], 2)),
+            'cost_CNV': tf.reduce_mean(tf.pow(self.input_CNV - self.outputs['output_CNV'], 2)),
+            'cost_mRNA': tf.reduce_mean(tf.pow(self.input_mRNA - self.outputs['output_mRNA'], 2))
+        }
+        self.optis = {
+            'opti_categ':tf.train.RMSPropOptimizer(self.rate_learning).minimize(self.costs['cost_categ']),
+            'opti_mut': tf.train.RMSPropOptimizer(self.rate_learning).minimize(self.costs['cost_mut']),
+            'opti_CNV': tf.train.RMSPropOptimizer(self.rate_learning).minimize(self.costs['cost_CNV']),
+            'opti_mRNA': tf.train.RMSPropOptimizer(self.rate_learning).minimize(self.costs['cost_mRNA'])
+        }
 
-        W_dec = tf.Variable(tf.random_normal([self.num_hnodes, self.Z.shape[1]]))
-        B_dec = tf.Variable(tf.random_normal([self.Z.shape[1]]))
-        feature = tf.concat([split_categ.get_H(), split_mut.get_H(), split_CNV.get_H(), split_mRNA.get_H()], 1)
-        output = tf.nn.sigmoid(tf.add(tf.matmul(feature, W_dec), B_dec))
+        feature = tf.concat([self.hiddens['H_categ'], self.hiddens['H_mut'], self.hiddens['H_CNV'], self.hiddens['H_mRNA']], 1)
+        output = tf.nn.sigmoid(tf.add(tf.matmul(feature, self.weights['W_dec']), self.bias['B_dec']))
+        output0, output1 = tf.split(output, [self.Z.shape[1] - 1, 1], 1)
+        self.cost = tf.reduce_mean(tf.pow(self.input_surviv - output1, 2))
+        self.opt = tf.train.RMSPropOptimizer(self.rate_learning).minimize(self.cost)
 
-        cost = tf.reduce_mean(tf.pow(answer - output, 2))
-        opt = tf.train.RMSPropOptimizer(self.rate_learning).minimize(cost)
+    def pre_train(self):
+        init = tf.global_variables_initializer()
+        sess = tf.Session()
+        sess.run(init)
+        for iter in range(2):
+            _, _, _, _, _, _, _, _ = sess.run([self.costs['cost_categ'], self.optis['opti_categ'],
+                             self.costs['cost_mut'], self.optis['opti_mut'],
+                             self.costs['cost_CNV'], self.optis['opti_CNV'],
+                             self.costs['cost_mRNA'], self.optis['opti_mRNA']], feed_dict={self.input_categ: self.X_categ,
+                                                                                           self.input_mut: self.X_mut,
+                                                                                           self.input_CNV: self.X_CNV,
+                                                                                           self.input_mRNA: self.X_mRNA})
+        print("Optimization done!")
+
+    def data_train(self):
         init = tf.global_variables_initializer()
         sess = tf.Session()
         sess.run(init)
 
         for iter in range(5001):
-            cost, _ = sess.run([cost, opt],
-                               feed_dict={input_categ: self.X_categ, input_mut: self.X_mut,
-                                          input_CNV: self.X_CNV, input_mRNA: self.X_mRNA,
-                                          input_surviv: self.Y, answer: self.Z})
+            c, _ = sess.run([self.cost, self.opt], feed_dict={self.input_categ: self.X_categ,
+                                                            self.input_mut: self.X_mut,
+                                                            self.input_CNV: self.X_CNV,
+                                                            self.input_mRNA: self.X_mRNA,
+                                                            self.input_surviv: self.Y})
             if iter % 100 == 0:
-                print(iter, "Cost is ", cost)
+                print(iter, "Cost is ", c)
+
+    def execute(self, set):
+        self.tf_construct(set)
+        self.pre_train()
+        self.data_train()
