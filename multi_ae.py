@@ -30,17 +30,11 @@ class train_set:
         df = pd.read_csv(self.file_name2, '\t')
         raw_input = df.values[:, 1:]
         self.Y = np.array(raw_input).transpose()
-        mean, stdv = st.mean(self.Y[:, 0]), st.stdev(self.Y[:, 0])
-        for i in range(self.Y.shape[0]):
-            self.Y[i, 0] = (self.Y[i, 0] - mean) / stdv
-
-        self.Z = np.concatenate((self.X, self.Y), 1)
-
 
 class multi_ae:
     def __init__(self, set, h1, h2, h3, h4, lr):
         self.rate_learning = lr
-        self.X, self.Y, self.Z = set.X, set.Y, set.Z
+        self.X, self.Y = set.X, set.Y
         self.X_categ, self.X_mut, self.X_CNV, self.X_mRNA = set.X_categ, set.X_mut, set.X_CNV, set.X_mRNA
         self.h_categ, self.h_mut, self.h_CNV, self.h_mRNA = h1, h2, h3, h4
         self.h = h1 + h2 + h3 + h4
@@ -61,7 +55,7 @@ class multi_ae:
             'W_mut_dec': tf.Variable(tf.random_normal([self.h_mut, self.X_mut.shape[1]])),
             'W_CNV_dec': tf.Variable(tf.random_normal([self.h_CNV, self.X_CNV.shape[1]])),
             'W_mRNA_dec': tf.Variable(tf.random_normal([self.h_mRNA, self.X_mRNA.shape[1]])),
-            'W_dec': tf.Variable(tf.random_normal([self.h, self.Z.shape[1]]))
+            'W_dec': tf.Variable(tf.random_normal([self.h, self.Y.shape[1]]))
         }
         self.bias = {
             'B_categ_enc': tf.Variable(tf.random_normal([self.h_categ])),
@@ -73,7 +67,7 @@ class multi_ae:
             'B_mut_dec': tf.Variable(tf.random_normal([self.X_mut.shape[1]])),
             'B_CNV_dec': tf.Variable(tf.random_normal([self.X_CNV.shape[1]])),
             'B_mRNA_dec': tf.Variable(tf.random_normal([self.X_mRNA.shape[1]])),
-            'B_dec': tf.Variable(tf.random_normal([self.Z.shape[1]]))
+            'B_dec': tf.Variable(tf.random_normal([self.Y.shape[1]]))
         }
         self.hiddens = {
             'H_categ': tf.nn.sigmoid(
@@ -111,9 +105,8 @@ class multi_ae:
         feature = tf.concat(
             [self.hiddens['H_categ'], self.hiddens['H_mut'], self.hiddens['H_CNV'], self.hiddens['H_mRNA']], 1)
         output = tf.nn.sigmoid(tf.add(tf.matmul(feature, self.weights['W_dec']), self.bias['B_dec']))
-        output0, output1 = tf.split(output, [self.Z.shape[1] - 1, 1], 1)
-        self.cost = tf.reduce_mean(tf.pow(self.input_surviv - output1, 2))
-        self.opt = tf.train.RMSPropOptimizer(self.rate_learning).minimize(self.cost)
+        self.cost = tf.reduce_mean(tf.pow(self.input_surviv - output, 2))
+        self.opt = tf.train.AdamOptimizer(self.rate_learning).minimize(self.cost)
 
     def pre_train(self):
         init = tf.global_variables_initializer()
@@ -128,6 +121,8 @@ class multi_ae:
                                                          self.input_mut: self.X_mut,
                                                          self.input_CNV: self.X_CNV,
                                                          self.input_mRNA: self.X_mRNA})
+        if iter % 100 == 0:
+            print(iter)
         print("Optimization done!")
 
     def data_train(self):
