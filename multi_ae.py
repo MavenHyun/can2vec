@@ -74,4 +74,4 @@ class multi_ae:
                 c, _, r = sess.run([self.cost_S, self.opti_S, self.output_S], feed_dict=self.ingredients)
                 if iter % 100 == 0:
                     print(iter, "Cost is ", c)
-                    print(r)
+

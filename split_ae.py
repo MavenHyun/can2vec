@@ -11,12 +11,12 @@ class split_ae:
         with tf.name_scope("Encoding_Layer"):
             self.W_enc = tf.Variable(tf.random_normal([self.X.shape[1], self.dim_h]))
             self.B_enc = tf.Variable(tf.random_normal([self.dim_h]))
-            self.enc = tf.nn.sigmoid(tf.add(tf.matmul(self.input_data, self.W_enc), self.B_enc))
+            self.enc = tf.nn.relu(tf.add(tf.matmul(self.input_data, self.W_enc), self.B_enc))
 
         with tf.name_scope("Decoding_Layer"):
             self.W_dec = tf.Variable(tf.random_normal([self.dim_h, self.X.shape[1]]))
             self.B_dec = tf.Variable(tf.random_normal([self.X.shape[1]]))
-            self.dec = tf.nn.sigmoid(tf.add(tf.matmul(self.enc, self.W_dec), self.B_dec))
+            self.dec = tf.nn.relu(tf.add(tf.matmul(self.enc, self.W_dec), self.B_dec))
 
         with tf.name_scope("Optimus_Prime"):
             self.C = tf.reduce_mean(tf.pow(self.input_data - self.dec, 2))
@@ -26,7 +26,7 @@ class split_ae:
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
-            for iter in range(1001):
+            for iter in range(5001):
                 _, _, self.W, self.B = sess.run([self.C, self.O, self.W_enc, self.B_enc],
                                                 feed_dict={self.input_data: self.X})
                 if iter % 100 == 0:
