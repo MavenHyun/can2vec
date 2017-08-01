@@ -119,7 +119,7 @@ class multi_ae:
         init = tf.global_variables_initializer()
         sess = tf.Session()
         sess.run(init)
-        for iter in range(2):
+        for iter in range(1000):
             _, _, _, _, _, _, _, _ = sess.run([self.costs['cost_categ'], self.optis['opti_categ'],
                                                self.costs['cost_mut'], self.optis['opti_mut'],
                                                self.costs['cost_CNV'], self.optis['opti_CNV'],
