@@ -8,7 +8,7 @@ tr.data_preprocess()
 tr.data_split()
 
 
-sa1 = sa.split_ae(tr.X_cli, tr.X_cli_eval, tr.X_cli_test 10, 0.01)
+sa1 = sa.split_ae(tr.X_cli, tr.X_cli_eval, tr.X_cli_test, 10, 0.01)
 sa1.initiate()
 
 
