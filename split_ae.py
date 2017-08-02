@@ -26,8 +26,8 @@ class split_ae:
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
-            diff, num_train, delta = 1.0, 0, 0.0
-            while diff > 0.01 and num_train < 10000:
+            diff, num_train, delta = 1.0, 0, 100.0
+            while diff > 0.01 and num_train < 10000 and delta > 0.00001:
                 num_train += 1
                 train_cost, _, self.W, self.B = sess.run([self.C, self.O, self.W_enc, self.B_enc],
                                                 feed_dict={self.input_data: self.X})
@@ -38,11 +38,10 @@ class split_ae:
                     print("Evaluation: ", eval_cost)
                     print(diff)
                 if num_train == 1:
-                    delta = diff
+                    old_diff = diff
                 else:
-                    delta -= diff
-                    if abs(delta) < 0.001:
-                        break
+                    delta = abs(old_diff - diff)
+                    old_diff = diff
             test_cost = sess.run(self.C, feed_dict={self.input_data: self.Z})
             print("Number of iterations: ", num_train, " Test: ", test_cost)
         self.result_iter = num_train
