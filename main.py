@@ -14,10 +14,10 @@ sa1.initiate()
 sa2 = sa.split_ae(tr.X_mut, tr.X_mut_eval, tr.X_mut_test, 20, 0.01)
 sa2.initiate()
 
-sa3 = sa.split_ae(tr.X_CNV, tr.X_CNV_eval, tr.X_CNV_test, 300, 0.005)
+sa3 = sa.split_ae(tr.X_CNV, tr.X_CNV_eval, tr.X_CNV_test, 300, 0.03)
 sa3.initiate()
 
-sa4 = sa.split_ae(tr.X_mRNA, tr.X_mRNA_eval, tr.X_mRNA_test, 800, 0.005)
+sa4 = sa.split_ae(tr.X_mRNA, tr.X_mRNA_eval, tr.X_mRNA_test, 1000, 0.001)
 sa4.initiate()
 
 sa1.printout()
