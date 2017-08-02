@@ -27,7 +27,7 @@ class split_ae:
         with tf.Session() as sess:
             sess.run(init)
             diff, num_train, force_train, delta = 1.0, 0, 500, 100.0
-            while diff > 0.01 and num_train < force_train:
+            while diff > 0.001 and num_train < force_train:
                 num_train += 1
                 train_cost, _, self.W, self.B = sess.run([self.C, self.O, self.W_enc, self.B_enc],
                                                 feed_dict={self.input_data: self.X})
