@@ -40,3 +40,11 @@ class split_ae:
 
             test_cost = sess.run(self.C, feed_dict={self.input_data: self.Z})
             print("Number of iterations: ", num_train, " Test: ", test_cost)
+        self.result_iter = num_train
+        self.result_diff = diff
+        self.result_test = test_cost
+
+    def printout(self):
+        print(self.result_iter)
+        print(self.result_diff)
+        print(self.result_test)
