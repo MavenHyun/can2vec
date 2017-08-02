@@ -49,6 +49,4 @@ class split_ae:
         self.result_test = test_cost
 
     def printout(self):
-        print(self.result_iter)
-        print(self.result_diff)
-        print(self.result_test)
+        print("iter: ", self.result_iter, " result: ", self.result_test)
