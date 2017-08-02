@@ -3,8 +3,8 @@ import pandas as pd
 import statistics as st
 
 class data_set:
-    def __init__(self, f, s, n):
-        self.file_name, self.file_name2 , self.num_train =  f, s, n
+    def __init__(self, f, s, n1, n2):
+        self.file_name, self.file_name2, self.size_eval, self.size_test = f, s, n1, n1 + n2
 
     def data_extract(self):
         df = pd.read_csv(self.file_name, '\t')
@@ -46,8 +46,8 @@ class data_set:
             self.Y[i, 0] = (self.Y[i, 0] - mean) / stdv
 
     def data_split(self):
-        [self.X, self.XX] = np.split(self.X, [self.num_train], axis=0)
-        [self.X_cli, self.XX_cli] = np.split(self.X_cli, [self.num_train], axis=0)
-        [self.X_mut, self.XX_mut] = np.split(self.X_mut, [self.num_train], axis=0)
-        [self.X_CNV, self.XX_CNV] = np.split(self.X_CNV, [self.num_train], axis=0)
-        [self.X_mRNA, self.XX_mRNA] = np.split(self.X_mRNA, [self.num_train], axis=0)
+        [self.x_cli, self.X_cli_eval, self.X_cli_test] = np.split(self.X_cli, [self.size_eval, self.size_test], axis=0)
+        [self.x_mut, self.X_mut_eval, self.X_mut_test] = np.split(self.X_mut, [self.size_eval, self.size_test], axis=0)
+        [self.x_CNV, self.X_CNV_eval, self.X_CNV_test] = np.split(self.X_CNV, [self.size_eval, self.size_test], axis=0)
+        [self.x_mRNA, self.X_mRNA_eval, self.X_mRNA_test] = np.split(self.X_mRNA, [self.size_eval, self.size_test], axis=0)
+
