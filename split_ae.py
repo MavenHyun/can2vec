@@ -27,13 +27,13 @@ class split_ae:
         with tf.Session() as sess:
             sess.run(init)
             diff, num_train = 1.0, 0
-            while (diff > 0.01 and num_train < 10000):
+            while diff > 0.01 and 1000 < num_train < 10000:
                 num_train += 1
                 train_cost, _, self.W, self.B = sess.run([self.C, self.O, self.W_enc, self.B_enc],
                                                 feed_dict={self.input_data: self.X})
                 eval_cost = sess.run(self.C, feed_dict={self.input_data: self.Y})
                 diff = abs(eval_cost - train_cost)
-                if num_train % 100 == 0:
+                if num_train % 500 == 0:
                     print(num_train, "th step:\t", "Cost is ", train_cost)
                     print("Evaluation: ", eval_cost)
                     print(diff)
