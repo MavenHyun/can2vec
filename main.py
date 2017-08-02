@@ -8,18 +8,18 @@ tr.data_preprocess()
 tr.data_split()
 
 
-sa1 = sa.split_ae(tr.X_cli, tr.XX_cli, 10, 0.01)
+sa1 = sa.split_ae(tr.X_cli, tr.X_cli_eval, tr.X_cli_test 10, 0.01)
 sa1.initiate()
 
 
 sa2 = sa.split_ae(tr.X_mut, tr.X_mut_eval, tr.X_mut_test, 20, 0.01)
 sa2.initiate()
 
-sa3 = sa.split_ae(tr.X_CNV, tr.XX_CNV, 300, 0.001)
+sa3 = sa.split_ae(tr.X_CNV, tr.X_CNV_eval, tr.X_CNV_test, 300, 0.001)
 sa3.initiate()
 
 
-sa4 = sa.split_ae(tr.X_mRNA, tr.XX_mRNA, 800, 0.001)
+sa4 = sa.split_ae(tr.X_mRNA, tr.X_mRNA_eval, tr.X_mRNA_test, 800, 0.001)
 sa4.initiate()
 
 
