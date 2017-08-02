@@ -41,7 +41,7 @@ class split_ae:
                     delta = diff
                 else:
                     delta -= diff
-                    if abs(delta) < 0.0001:
+                    if abs(delta) < 0.001:
                         break
             test_cost = sess.run(self.C, feed_dict={self.input_data: self.Z})
             print("Number of iterations: ", num_train, " Test: ", test_cost)
