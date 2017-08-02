@@ -32,6 +32,11 @@ class data_set:
         mean, stdv = st.mean(self.X_cli[:, 0]), st.stdev(self.X_cli[:, 0])
         for i in range(self.X_cli.shape[0]):
             self.X_cli[i, 0] = (self.X_cli[i, 0] - mean) / stdv
+
+        '''
+        for i in range(self.X_CNV.shape[0]):
+            if self.X_CNV[i, 0] == -2.0: self.X_CNV[i, 0] = 
+        '''
         for i in range(self.X_mRNA.shape[1]):
             mean, stdv = st.mean(self.X_mRNA[:, i]), st.stdev(self.X_mRNA[:, i])
             if (stdv != 0):
