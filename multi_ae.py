@@ -2,27 +2,29 @@ import tensorflow as tf
 # NumPy is often used to load, manipulate and preprocess data.
 
 class multi_ae:
-    def __init__(self, z, s1, s2, s3, s4, lr):
-
+    def __init__(self, data_set, split_aes, learn_rate):
         with tf.name_scope("Input_Layer"):
-            self.learning_rate = lr
-            self.inputs = {'input_cli': tf.placeholder("float", [z.X_cli.shape[0], z.X_cli.shape[1]]),
-                           'input_mut': tf.placeholder("float", [z.X_mut.shape[0], z.X_mut.shape[1]]),
-                           'input_CNV': tf.placeholder("float", [z.X_CNV.shape[0], z.X_CNV.shape[1]]),
-                           'input_mRNA': tf.placeholder("float", [z.X_mRNA.shape[0], z.X_mRNA.shape[1]]),
-                           'answer_R': tf.placeholder("float", [z.X.shape[0], z.X.shape[1]]),
-                           'answer_S': tf.placeholder("float", [z.Y.shape[0], z.Y.shape[1]])}
+            self.L_rate = learn_rate
+            self.F_cli, self.F_mut = data_set.x_cli[0].shape[1], data_set.x_mut[0].shape[1]
+            self.F_CNV, self.F_mRNA = data_set.x_CNV[0].shape[1], data_set.x_mRNA[0].shape[1]
+            self.F, self.SAE = self.F_cli + self.F_mut + self.F_CNV + self.F_mRNA, split_aes
+            self.inputs = {'input_cli': tf.placeholder("float", [None, self.F_cli]),
+                           'input_mut': tf.placeholder("float", [None, self.F_mut]),
+                           'input_CNV': tf.placeholder("float", [None, self.F_CNV]),
+                           'input_mRNA': tf.placeholder("float", [None, self.F_mRNA]),
+                           'answer_R': tf.placeholder("float", [None, self.F]),
+                           'answer_S': tf.placeholder("float", [None, 1])}
             
         with tf.name_scope("Compression_Layer"):
-            self.dim_h = s1.dim_h + s2.dim_h + s3.dim_h + s4.dim_h
-            self.weights = {'W_cli': tf.placeholder("float", [z.X_cli.shape[1], s1.dim_h]),
-                            'W_mut': tf.placeholder("float", [z.X_mut.shape[1], s2.dim_h]),
-                            'W_CNV': tf.placeholder("float", [z.X_CNV.shape[1], s3.dim_h]),
-                            'W_mRNA': tf.placeholder("float", [z.X_mRNA.shape[1], s4.dim_h])}
-            self.bias = {'B_cli': tf.placeholder("float", [s1.dim_h]),
-                         'B_mut': tf.placeholder("float", [s2.dim_h]),
-                         'B_CNV': tf.placeholder("float", [s3.dim_h]),
-                         'B_mRNA': tf.placeholder("float", [s4.dim_h])}
+            self.dim_h = self.SAE[0].dim_hid + self.SAE[1].dim_hid + self.SAE[2].dim_hid + self.SAE[3].dim_hid
+            self.weights = {'W_cli': tf.placeholder("float", [self.F_cli, self.SAE[0].dim_h]),
+                            'W_mut': tf.placeholder("float", [self.F_mut, self.SAE[1].dim_h]),
+                            'W_CNV': tf.placeholder("float", [self.F_CNV, self.SAE[2].dim_h]),
+                            'W_mRNA': tf.placeholder("float", [self.F_mRNA, self.SAE[3].dim_h])}
+            self.bias = {'B_cli': tf.placeholder("float", [self.SAE[0].dim_h]),
+                         'B_mut': tf.placeholder("float", [self.SAE[1].dim_h]),
+                         'B_CNV': tf.placeholder("float", [self.SAE[2].dim_h]),
+                         'B_mRNA': tf.placeholder("float", [self.SAE[0].dim_h])}
             self.hidden = tf.concat([tf.nn.sigmoid(tf.add(tf.matmul(self.inputs['input_cli'],
                                                                     self.weights['W_cli']),
                                                           self.bias['B_cli'])),

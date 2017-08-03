@@ -1,8 +1,7 @@
 import tensorflow as tf
 import numpy as np
+import tf_components as tc
 import os
-
-
 
 class split_ae:
 
@@ -11,7 +10,8 @@ class split_ae:
             self.X_train, self.X_eval, self.X_test = data_set[0], data_set[1], data_set[2]
             self.H_dim, self.L_rate, self.F_num, self.D_mode = dim_hid, learn_rate, data_set[0].shape[1], denoise
             self.input_data = tf.placeholder("float", [None, self.F_num])
-
+            self.answer_data = tf.placeholder("float", [None, self.F_num])
+        '''
         with tf.name_scope("Encoding_Layer"):
             self.W_enc = tf.Variable(tf.random_normal([self.F_num, self.H_dim]))
             self.B_enc = tf.Variable(tf.random_normal([self.H_dim]))
@@ -21,32 +21,33 @@ class split_ae:
             self.W_dec = tf.Variable(tf.random_normal([self.H_dim, self.F_num]))
             self.B_dec = tf.Variable(tf.random_normal([self.F_num]))
             self.dec = tf.nn.relu(tf.add(tf.matmul(self.enc, self.W_dec), self.B_dec))
-            self.answer_data = tf.placeholder("float", [None, self.F_num])
 
         with tf.name_scope("Optimus_Prime"):
-            self.C = tf.reduce_mean(tf.pow(self.input_data - self.dec, 2))
+            self.answer_data = tf.placeholder("float", [None, self.F_num])
+            self.C = tf.reduce_mean(tf.pow(self.answer_data - self.dec, 2))
             self.O = tf.train.AdamOptimizer(self.L_rate).minimize(self.C)
+        '''
+    def construct_encoder(self, layer_name, input_ph, dim0, dim1, activation):
+        enc = tc.encoder_ae(layer_name, input_ph, dim0, dim1, activation)
+        return enc
 
-    def snp_noise(self, dataset, switch):
-        denoised = dataset.copy()
-        fraction = int(float(dataset.shape[1]) / 5)
-        if switch is True:
-            for i in range(dataset.shape[0]):
-                mask = np.random.randint(0, dataset.shape[1], fraction)
-                for m in mask:
-                    denoised[i, m] = 0.
-        return denoised
+    def construct_decoder(self, layer_name, input_ph, dim0, dim1, activation):
+        dec = tc.encoder_ae(layer_name, input_ph, dim0, dim1, activation)
+        return dec
 
-    def initiate(self):
+    def construct_optimizer(self, opti_name, output_ph, answer_ph, learn_rate, train_meth):
+        opt = tc.optimizer_ae(opti_name, output_ph, answer_ph, learn_rate, train_meth)
+        return opt
+
+    def initiate(self, get_W, get_B):
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
             diff, num_train, delta = 1.0, 0, 100.0
             while num_train < 1000:
                 num_train += 1
-                train_cost, _, self.W, self.B = sess.run([self.C, self.O, self.W_enc, self.B_enc],
-                                                         feed_dict={self.input_data:
-                                                                    self.snp_noise(self.X_train, self.D_mode),
+                train_cost, _, self.W, self.B = sess.run([self.C, self.O, get_W, get_B],
+                                                         feed_dict={self.input_data: self.X_train,
                                                                     self.answer_data: self.X_train})
                 eval_cost = sess.run(self.C, feed_dict={self.input_data: self.X_eval, self.answer_data: self.X_eval})
                 diff = abs(eval_cost - train_cost)

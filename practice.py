@@ -4,6 +4,18 @@ import numpy as np
 import pandas as pd
 import statistics as st
 
+'''
+def snp_noise(self, dataset, switch):
+    denoised = dataset.copy()
+    fraction = int(float(dataset.shape[1]) / 5)
+    if switch is True:
+        for i in range(dataset.shape[0]):
+            mask = np.random.randint(0, dataset.shape[1], fraction)
+            for m in mask:
+                denoised[i, m] = 0.
+    return denoised
+
+
 def mask_noise(dataset, fraction):
 
     denoised = dataset.copy()
@@ -307,7 +319,7 @@ class maven_ae:
             if iter % 100 == 0:
                 print(iter, "COST:  ", cost_value)
 
-'''
+
 test = multi_ae(20, 100, 500, 0.80)
 test.data_training('ACC_features.tsv', 'ACC_survival.tsv')
 '''
