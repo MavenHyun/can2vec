@@ -39,32 +39,11 @@ class split_ae:
         opt = tc.optimizer_ae(opti_name, output_ph, answer_ph, learn_rate, train_meth)
         return opt
 
-    def initiate(self, get_W, get_B):
+    def initiate(self, get_W, get_B, opt):
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
-
-
-            diff, num_train, delta = 1.0, 0, 100.0
-            while num_train < 1000:
-                num_train += 1
-                train_cost, _, self.W, self.B = sess.run([self.C, self.O, get_W, get_B],
-                                                         feed_dict={self.input_data: self.X_train,
-                                                                    self.answer_data: self.X_train})
-                eval_cost = sess.run(self.C, feed_dict={self.input_data: self.X_eval, self.answer_data: self.X_eval})
-                diff = abs(eval_cost - train_cost)
-                if num_train == 1:
-                    old_diff = diff
-                else:
-                    delta, old_diff = abs(old_diff - diff), diff
-                if num_train == 1000:
-                    if num_train < 10000 or delta > 0.00001 or diff > 0.001:
-                        break
-                    else:
-                        num_train -= 1
-            test_cost = sess.run(self.C, feed_dict={self.input_data: self.X_test, self.answer_data: self.X_test})
-        self.result_iter = num_train
-        self.result_test = test_cost
+            opt.train_getWB #organize placeholders and dicts
 
     def printout(self):
         print("iter: ", self.result_iter, " result: ", self.result_test)
