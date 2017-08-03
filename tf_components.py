@@ -43,3 +43,23 @@ class optimizer_ae:
                 self.opti = tf.train.AdadeltaOptimizer(learn_rate).minimize(self.cost)
             else:
                 self.opti = tf.train.GradientDescentOptimizer(learn_rate).minimize(self.cost)
+
+    def train_getWB(self, session, get_W, get_B, train_dict, eval_dict, test_dict, force_epochs):
+        diff, num_train, delta = 1.0, 0, 100.0
+        while num_train < force_epochs:
+            num_train += 1
+            train_cost, _, self.W, self.B = session.run([self.cost, self.bias, get_W, get_B], feed_dict=train_dict)
+            eval_cost = session.run(self.cost, feed_dict=eval_dict)
+            diff = abs(eval_cost - train_cost)
+            if num_train == 1:
+                old_diff = diff
+            else:
+                delta, old_diff = abs(old_diff - diff), diff
+            if num_train == 1000:
+                if num_train < 10000 or delta > 0.00001 or diff > 0.001:
+                    break
+                else:
+                    num_train -= 1
+        test_cost = session.run(self.cost, feed_dict=test_dict)
+        self.result_iter = num_train
+        self.result_test = test_cost

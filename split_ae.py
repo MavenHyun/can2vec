@@ -43,6 +43,8 @@ class split_ae:
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
+
+
             diff, num_train, delta = 1.0, 0, 100.0
             while num_train < 1000:
                 num_train += 1
