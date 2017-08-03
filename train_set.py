@@ -33,7 +33,6 @@ class data_set:
         for i in range(self.X_cli.shape[0]):
             self.X_cli[i, 0] = (self.X_cli[i, 0] - mean) / stdv
 
-
         for i in range(self.X_CNV.shape[0]):
             if self.X_CNV[i, 0] == -2.0: self.X_CNV[i, 0] = 0
             elif self.X_CNV[i, 0] == -1.0: self.X_CNV[i, 0] = 0.25
@@ -55,10 +54,9 @@ class data_set:
             self.Y[i, 0] = (self.Y[i, 0] - mean) / stdv
 
     def data_split(self):
-        [self.x, self.X_eval, self.X_test] = np.split(self.X, [self.size_eval, self.size_test], axis=0)
-        [self.x_cli, self.X_cli_eval, self.X_cli_test] = np.split(self.X_cli, [self.size_eval, self.size_test], axis=0)
-        [self.x_mut, self.X_mut_eval, self.X_mut_test] = np.split(self.X_mut, [self.size_eval, self.size_test], axis=0)
-        [self.x_CNV, self.X_CNV_eval, self.X_CNV_test] = np.split(self.X_CNV, [self.size_eval, self.size_test], axis=0)
-        [self.x_mRNA, self.X_mRNA_eval, self.X_mRNA_test] = np.split(self.X_mRNA, [self.size_eval, self.size_test], axis=0)
-
-
+        # [train_set, eval_set, test_set]
+        self.x = np.split(self.X, [self.size_eval, self.size_test], axis=0)
+        self.x_cli = np.split(self.X_cli, [self.size_eval, self.size_test], axis=0)
+        self.x_mut = np.split(self.X_mut, [self.size_eval, self.size_test], axis=0)
+        self.x_CNV = np.split(self.X_CNV, [self.size_eval, self.size_test], axis=0)
+        self.x_mRNA = np.split(self.X_mRNA, [self.size_eval, self.size_test], axis=0)
