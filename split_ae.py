@@ -2,15 +2,7 @@ import tensorflow as tf
 import numpy as np
 import os
 
-def snp_noise(dataset, fraction, switch):
 
-    denoised = dataset.copy()
-    if switch is True:
-        for i in range(dataset.shape[0]):
-            mask = np.random.randint(0, dataset.shape[1], fraction)
-            for m in mask:
-                denoised[i, m] = 0.
-    return denoised
 
 class split_ae:
 
@@ -18,7 +10,7 @@ class split_ae:
         with tf.name_scope("Input_Layer"):
             self.X_train, self.X_eval, self.X_test = data_set[0], data_set[1], data_set[2]
             self.H_dim, self.L_rate, self.F_num, self.D_mode = dim_hid, learn_rate, data_set[0].shape[1], denoise
-            self.input_data = tf.placeholder("float", [None, self.X_train.shape[1]])
+            self.input_data = tf.placeholder("float", [None, self.F_num])
 
         with tf.name_scope("Encoding_Layer"):
             self.W_enc = tf.Variable(tf.random_normal([self.F_num, self.H_dim]))
@@ -35,6 +27,16 @@ class split_ae:
             self.C = tf.reduce_mean(tf.pow(self.input_data - self.dec, 2))
             self.O = tf.train.AdamOptimizer(self.L_rate).minimize(self.C)
 
+    def snp_noise(self, dataset, switch):
+        denoised = dataset.copy()
+        fraction = int(float(dataset.shape[1]) / 5)
+        if switch is True:
+            for i in range(dataset.shape[0]):
+                mask = np.random.randint(0, dataset.shape[1], fraction)
+                for m in mask:
+                    denoised[i, m] = 0.
+        return denoised
+
     def initiate(self):
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
@@ -44,7 +46,7 @@ class split_ae:
                 num_train += 1
                 train_cost, _, self.W, self.B = sess.run([self.C, self.O, self.W_enc, self.B_enc],
                                                          feed_dict={self.input_data:
-                                                                    snp_noise(self.X_train, 0.3, self.D_mode),
+                                                                    self.snp_noise(self.X_train, self.D_mode),
                                                                     self.answer_data: self.X_train})
                 eval_cost = sess.run(self.C, feed_dict={self.input_data: self.X_eval, self.answer_data: self.X_eval})
                 diff = abs(eval_cost - train_cost)
