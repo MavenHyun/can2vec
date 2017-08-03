@@ -6,15 +6,10 @@ def snp_noise(dataset, fraction, switch):
 
     denoised = dataset.copy()
     if switch is True:
-        min = dataset.min()
-        max = dataset.max()
-        for i, sample in enumerate(dataset):
+        for i in range(dataset.shape[0]):
             mask = np.random.randint(0, dataset.shape[1], fraction)
             for m in mask:
-                if np.random.random() < 0.5:
-                    denoised[i, m] = min
-                else:
-                    denoised[i, m] = max
+                denoised[i, m] = 0.
     return denoised
 
 class split_ae:
