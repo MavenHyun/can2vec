@@ -1,78 +1,64 @@
 import tensorflow as tf
+import tf_components as tc
+import split_ae as sa
 # NumPy is often used to load, manipulate and preprocess data.
-'''
+
 class multi_ae:
-    def __init__(self, data_set, split_aes, learn_rate):
-        with tf.name_scope("Input_Layer"):
-            self.L_rate = learn_rate
-            self.F_cli, self.F_mut = data_set.x_cli[0].shape[1], data_set.x_mut[0].shape[1]
-            self.F_CNV, self.F_mRNA = data_set.x_CNV[0].shape[1], data_set.x_mRNA[0].shape[1]
-            self.F, self.SAE = self.F_cli + self.F_mut + self.F_CNV + self.F_mRNA, split_aes
-            self.inputs = {'input_cli': tf.placeholder("float", [None, self.F_cli]),
-                           'input_mut': tf.placeholder("float", [None, self.F_mut]),
-                           'input_CNV': tf.placeholder("float", [None, self.F_CNV]),
-                           'input_mRNA': tf.placeholder("float", [None, self.F_mRNA]),
-                           'answer_R': tf.placeholder("float", [None, self.F]),
+    def __init__(self, data_set, products_cli, products_mut, products_CNV, products_mRNA, total_hnodes):
+
+        with tf.name_scope("Basic_Settings"):
+            self.H, self.F = total_hnodes, data_set.X.shape[1]
+
+        with tf.name_scope("Placeholders"):
+            self.inputs = {'encoded_cli': tf.placeholder("float", [None, None]),
+                           'encoded_mut': tf.placeholder("float", [None, None]),
+                           'encoded_CNV': tf.placeholder("float", [None, None]),
+                           'encoded_mRNA': tf.placeholder("float", [None, None]),
+                           'answer_R': tf.placeholder("float", [None, self.H]),
                            'answer_S': tf.placeholder("float", [None, 1])}
-            
-        with tf.name_scope("Compression_Layer"):
-            self.dim_h = self.SAE[0].dim_hid + self.SAE[1].dim_hid + self.SAE[2].dim_hid + self.SAE[3].dim_hid
-            self.weights = {'W_cli': tf.placeholder("float", [self.F_cli, self.SAE[0].dim_h]),
-                            'W_mut': tf.placeholder("float", [self.F_mut, self.SAE[1].dim_h]),
-                            'W_CNV': tf.placeholder("float", [self.F_CNV, self.SAE[2].dim_h]),
-                            'W_mRNA': tf.placeholder("float", [self.F_mRNA, self.SAE[3].dim_h])}
-            self.bias = {'B_cli': tf.placeholder("float", [self.SAE[0].dim_h]),
-                         'B_mut': tf.placeholder("float", [self.SAE[1].dim_h]),
-                         'B_CNV': tf.placeholder("float", [self.SAE[2].dim_h]),
-                         'B_mRNA': tf.placeholder("float", [self.SAE[0].dim_h])}
-            self.hidden = tf.concat([tf.nn.sigmoid(tf.add(tf.matmul(self.inputs['input_cli'],
-                                                                    self.weights['W_cli']),
-                                                          self.bias['B_cli'])),
-                                     tf.nn.sigmoid(tf.add(tf.matmul(self.inputs['input_mut'],
-                                                                    self.weights['W_mut']),
-                                                          self.bias['B_mut'])),
-                                     tf.nn.sigmoid(tf.add(tf.matmul(self.inputs['input_CNV'],
-                                                                    self.weights['W_CNV']),
-                                                          self.bias['B_CNV'])),
-                                     tf.nn.sigmoid(tf.add(tf.matmul(self.inputs['input_mRNA'],
-                                                                    self.weights['W_mRNA']),
-                                                          self.bias['B_mRNA']))], 1)
-            
-        with tf.name_scope("Alchemy_Layer"):
-            self.weight_A = tf.Variable(tf.random_normal([self.dim_h, self.dim_h]))
-            self.bias_A = tf.Variable(tf.random_normal([self.dim_h]))
-            self.alchemy = tf.nn.sigmoid(tf.add(tf.matmul(self.hidden, self.weight_A), self.bias_A))
-            
-        with tf.name_scope("Survivability_Layer"):
-            self.weight_S = tf.Variable(tf.random_normal([self.dim_h, z.Y.shape[1]]))
-            self.bias_S = tf.Variable(tf.random_normal([z.Y.shape[1]]))
-            self.output_S = tf.nn.sigmoid(tf.add(tf.matmul(self.alchemy, self.weight_S), self.bias_S))
+            self.feature_vector = tf.concat([self.inputs['encoded_cli'], self.inputs['encoded_mut'],
+                                             self.inputs['encoded_CNV'], self.inputs['encoded_mRNA']], 1)
 
-        with tf.name_scope("Reconstruction_Layer"):
-            self.weight_R = tf.Variable(tf.random_normal([self.dim_h, z.X.shape[1]]))
-            self.bias_R = tf.Variable(tf.random_normal([z.X.shape[1]]))
-            self.output_R = tf.nn.sigmoid(tf.add(tf.matmul(self.hidden, self.weight_R), self.bias_R))
+        with tf.name_scope("Dictionaries"):
+            self.train_dict = {self.inputs['encoded_cli']: products_cli[0],
+                               self.inputs['encoded_mut']: products_mut[0],
+                               self.inputs['encoded_CNV']: products_CNV[0],
+                               self.inputs['encoded_mRNA']: products_mRNA[0],
+                               self.inputs['answer_S']: data_set.y[0],
+                               self.inputs['answer_R']: data_set.x[0]}
+            self.eval_dict = {self.inputs['encoded_cli']: products_cli[1],
+                              self.inputs['encoded_mut']: products_mut[1],
+                              self.inputs['encoded_CNV']: products_CNV[1],
+                              self.inputs['encoded_mRNA']: products_mRNA[1],
+                              self.inputs['answer_S']: data_set.y[1],
+                              self.inputs['answer_R']: data_set.x[1]}
+            self.test_dict = {self.inputs['encoded_cli']: products_cli[2],
+                              self.inputs['encoded_mut']: products_mut[2],
+                              self.inputs['encoded_CNV']: products_CNV[2],
+                              self.inputs['encoded_mRNA']: products_mRNA[2],
+                              self.inputs['answer_S']: data_set.y[2],
+                              self.inputs['answer_R']: data_set.x[2]}
 
-        with tf.name_scope("Optimus_Prime"):
-            self.cost_S = tf.reduce_mean(tf.pow(self.inputs['answer_S'] - self.output_S, 2))
-            self.opti_S = tf.train.AdagradOptimizer(self.learning_rate).minimize(self.cost_S)
-            self.cost_R = tf.reduce_mean(tf.pow(self.inputs['answer_R'] - self.output_R, 2))
-            self.opti_R = tf.train.AdagradOptimizer(self.learning_rate).minimize(self.cost_R)
+    def construct_Projector(self, layer_name, activation):
+        pro = tc.Projector(layer_name, self.feature_vector, self.H, activation)
+        return pro
 
-        self.ingredients = {self.inputs['input_cli']: z.X_cli, self.inputs['input_mut']: z.X_mut,
-                            self.inputs['input_CNV']: z.X_CNV, self.inputs['input_mRNA']: z.X_mRNA,
-                            self.inputs['answer_R']: z.X, self.inputs['answer_S']: z.Y,
-                            self.weights['W_cli']: s1.W, self.weights['W_mut']: s2.W,
-                            self.weights['W_CNV']: s3.W, self.weights['W_mRNA']: s4.W,
-                            self.bias['B_cli']: s1.B, self.bias['B_mut']: s2.B,
-                            self.bias['B_CNV']: s3.B, self.bias['B_mRNA']: s4.B}
+    def construct_Predictor(self, layer_name, input_ph, activation):
+        pre = tc.Predictor(layer_name, self.H, input_ph, activation)
+        return pre
 
-    def initiate(self):
+    def construct_ReConstructor(self, layer_name, activation):
+        rec = tc.ReConstructor(layer_name, self.feature_vector, self.H, self.F, activation)
+        return rec
+
+    def construct_Optimizer(self, layer_name, output_ph, answer_ph, learn_rate, train_meth):
+        opt = tc.Optimizer(layer_name, output_ph, answer_ph, learn_rate, train_meth)
+        return opt
+
+    def initiate(self, optimizer, epochs):
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
-            for iter in range(5001):
-                c, _, r = sess.run([self.cost_S, self.opti_S, self.output_S], feed_dict=self.ingredients)
-                if iter % 100 == 0:
-                    print(iter, "Cost is ", c)
-'''
+            optimizer.optimize_ma(sess, self.train_dict, self.eval_dict, self.test_dict, epochs)
+
+

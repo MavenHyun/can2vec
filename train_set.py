@@ -56,6 +56,7 @@ class data_set:
     def data_split(self):
         # [train_set, eval_set, test_set]
         self.x = np.split(self.X, [self.size_eval, self.size_test], axis=0)
+        self.y = np.split(self.Y, [self.size_eval, self.size_test], axis=0)
         self.x_cli = np.split(self.X_cli, [self.size_eval, self.size_test], axis=0)
         self.x_mut = np.split(self.X_mut, [self.size_eval, self.size_test], axis=0)
         self.x_CNV = np.split(self.X_CNV, [self.size_eval, self.size_test], axis=0)
