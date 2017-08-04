@@ -47,8 +47,9 @@ class Projector:
 class Predictor:
     def __init__(self, layer_name, input_ph, dim, activation):
         with tf.name_scope(layer_name):
-            self.weights = tf.Variable(tf.random_normal([dim, 1]))
-            self.bias = tf.Variable(tf.random_normal([1]))
+            x = 1
+            self.weights = tf.Variable(tf.random_normal([dim, x]))
+            self.bias = tf.Variable(tf.random_normal([x]))
             if activation == 0:
                 self.result = tf.nn.relu(tf.add(tf.matmul(input_ph, self.weights), self.bias))
             elif activation == 1:
