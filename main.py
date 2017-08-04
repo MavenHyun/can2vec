@@ -33,8 +33,10 @@ for iter in range(10):
 
     sae_mRNA = sa.split_ae(tr.x_mRNA, False)
     sae_mRNA_enc1 = sae_mRNA.construct_encoder("mRNA_Encoding_Layer1", sae_mRNA.input_data, sae_mRNA.F_num, 800, 0)
-    sae_mRNA_enc2 = sae_mRNA.construct_encoder("mRNA_Encoding_Layer2", sae_mRNA_enc1.result, 800, 350, 0)
-    sae_mRNA_dec2 = sae_mRNA.construct_decoder("mRNA_Decoding_Layer2", sae_mRNA_enc2.result, 350, 800, 0)
+    sae_mRNA_enc2 = sae_mRNA.construct_encoder("mRNA_Encoding_Layer2", sae_mRNA_enc1.result, 800, 650, 0)
+    sae_mRNA_enc3 = sae_mRNA.construct_encoder("mRNA_Encoding_Layer3", sae_mRNA_enc2.result, 650, 300, 0)
+    sae_mRNA_dec3 = sae_mRNA.construct_decoder("mRNA_Decoding_Layer3", sae_mRNA_enc3.result, 300, 650, 0)
+    sae_mRNA_dec2 = sae_mRNA.construct_decoder("mRNA_Decoding_Layer2", sae_mRNA_dec3.result, 650, 800, 0)
     sae_mRNA_dec1 = sae_mRNA.construct_decoder("mRNA_Decoding_Layer1", sae_mRNA_dec2.result, 800, sae_mRNA.F_num, 0)
     sae_mRNA_opti = sae_mRNA.construct_optimizer("mRNA_Optimizer", sae_mRNA_dec1.result, sae_mRNA.input_data, 0.4, 0)
     sae_mRNA.initiate(sae_mRNA_opti, 1000)
