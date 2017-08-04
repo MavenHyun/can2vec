@@ -44,7 +44,7 @@ class multi_ae:
         return pro
 
     def construct_Predictor(self, layer_name, input_ph, activation):
-        pre = tc.Predictor(layer_name, self.H, input_ph, activation)
+        pre = tc.Predictor(layer_name, input_ph, self.H, activation)
         return pre
 
     def construct_ReConstructor(self, layer_name, activation):
