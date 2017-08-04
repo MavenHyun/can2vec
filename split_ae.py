@@ -35,7 +35,7 @@ class split_ae:
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
             sess.run(init)
-            optimizer.train_getWB(sess, self.train_dict, self.eval_dict, self.test_dict, force_epochs)
+            optimizer.optimize_test(sess, self.train_dict, self.eval_dict, self.test_dict, force_epochs)
 
     def print_result(self, optimizer):
         print("Number of Epochs: ", optimizer.result_iter, " Test Result: ", optimizer.result_test)
