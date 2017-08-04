@@ -14,7 +14,7 @@ class multi_ae:
                            'encoded_mut': tf.placeholder("float", [None, None]),
                            'encoded_CNV': tf.placeholder("float", [None, None]),
                            'encoded_mRNA': tf.placeholder("float", [None, None]),
-                           'answer_R': tf.placeholder("float", [None, self.H]),
+                           'answer_R': tf.placeholder("float", [None, self.F]),
                            'answer_S': tf.placeholder("float", [None, 1])}
             self.feature_vector = tf.concat([self.inputs['encoded_cli'], self.inputs['encoded_mut'],
                                              self.inputs['encoded_CNV'], self.inputs['encoded_mRNA']], 1)
