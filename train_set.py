@@ -49,9 +49,12 @@ class data_set:
         df = pd.read_csv(self.file_name2, '\t')
         raw_input = df.values[:, 1:]
         self.Y = np.array(raw_input).transpose()
+        '''
         mean, stdv = st.mean(self.Y[:, 0]), st.stdev(self.Y[:, 0])
         for i in range(self.Y.shape[0]):
             self.Y[i, 0] = (self.Y[i, 0] - mean) / stdv
+        '''
+
 
     def data_split(self):
         # [train_set, eval_set, test_set]
