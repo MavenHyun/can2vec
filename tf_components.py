@@ -31,6 +31,7 @@ class decoder_ae:
 
 class optimizer_ae:
     def __init__(self, opti_name, output_ph, answer_ph, learn_rate, train_meth):
+        self.weights, self.bias, self.result_iter, self.result_test = 0, 0, 0, 0
         with tf.name_scope(opti_name):
             self.cost = tf.reduce_mean(tf.pow(answer_ph - output_ph, 2))
             if train_meth == 0:
@@ -44,11 +45,11 @@ class optimizer_ae:
             else:
                 self.opti = tf.train.GradientDescentOptimizer(learn_rate).minimize(self.cost)
 
-    def train_getWB(self, session, get_W, get_B, train_dict, eval_dict, test_dict, force_epochs):
+    def optimize_test(self, session, train_dict, eval_dict, test_dict, force_epochs):
         diff, num_train, delta = 1.0, 0, 100.0
         while num_train < force_epochs:
             num_train += 1
-            train_cost, _, self.W, self.B = session.run([self.cost, self.bias, get_W, get_B], feed_dict=train_dict)
+            train_cost, _, self.weights, self.bias = session.run([self.cost, self.opti, get_W, get_B], feed_dict=train_dict)
             eval_cost = session.run(self.cost, feed_dict=eval_dict)
             diff = abs(eval_cost - train_cost)
             if num_train == 1:
@@ -63,3 +64,8 @@ class optimizer_ae:
         test_cost = session.run(self.cost, feed_dict=test_dict)
         self.result_iter = num_train
         self.result_test = test_cost
+
+    def get_optimized(self, session, weights, bias, test_dict):
+        opt_weights, opt_bias = session.run([weights, bias], feed_dict=test_dict)
+        opt_parameters = [opt_weights, opt_bias]
+        return opt_parameters

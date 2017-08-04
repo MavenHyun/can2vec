@@ -1,6 +1,6 @@
 import tensorflow as tf
 # NumPy is often used to load, manipulate and preprocess data.
-
+'''
 class multi_ae:
     def __init__(self, data_set, split_aes, learn_rate):
         with tf.name_scope("Input_Layer"):
@@ -75,4 +75,4 @@ class multi_ae:
                 c, _, r = sess.run([self.cost_S, self.opti_S, self.output_S], feed_dict=self.ingredients)
                 if iter % 100 == 0:
                     print(iter, "Cost is ", c)
-
+'''
