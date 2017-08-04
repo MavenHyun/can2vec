@@ -21,7 +21,6 @@ class split_ae:
 
     def construct_Encoder(self, layer_name, input_ph, dim0, dim1, activation):
         enc = tc.Encoder(layer_name, input_ph, dim0, dim1, activation)
-        self.D_min = dim1
         return enc
 
     def construct_Decoder(self, layer_name, input_ph, dim0, dim1, activation):
