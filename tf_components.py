@@ -113,7 +113,7 @@ class Optimizer:
         return [product_train, product_eval, product_test]
 
     def optimize_ma(self, session, train_dict, eval_dict, test_dict, epochs):
-        for iter in epochs:
+        for iter in range(epochs):
             train_cost, _, = session.run([self.cost, self.opti], feed_dict=train_dict)
             eval_cost = session.run(self.cost, feed_dict=eval_dict)
             if iter % 100 == 0:
