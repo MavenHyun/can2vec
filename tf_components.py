@@ -49,7 +49,7 @@ class optimizer_ae:
         diff, num_train, delta = 1.0, 0, 100.0
         while num_train < force_epochs:
             num_train += 1
-            train_cost, _, self.weights, self.bias = session.run([self.cost, self.opti, get_W, get_B], feed_dict=train_dict)
+            train_cost, _, = session.run([self.cost, self.opti], feed_dict=train_dict)
             eval_cost = session.run(self.cost, feed_dict=eval_dict)
             diff = abs(eval_cost - train_cost)
             if num_train == 1:
