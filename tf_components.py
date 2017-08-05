@@ -99,9 +99,9 @@ class Optimizer:
                 old_diff = diff
             else:
                 delta, old_diff = abs(old_diff - diff), diff
-            if num_train > 1000 and (delta > 0.00001 or diff > 0.001):
+            if num_train > 500 and (delta > 0.00001 or diff > 0.00001):
                 break
-            if num_train % 100 == 0:
+            if num_train % 10 == 0:
                 print("Training Cost:", train_cost, "Evaluation Cost: ", eval_cost)
         test_cost = session.run(self.cost, feed_dict=test_dict)
         self.result_iter = num_train
