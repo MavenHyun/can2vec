@@ -99,7 +99,7 @@ class Optimizer:
                 old_diff = diff
             else:
                 delta, old_diff = abs(old_diff - diff), diff
-            if num_train == 1000:
+            if num_train == force_epochs:
                 if num_train < 10000 or delta > 0.00001 or diff > 0.001:
                     break
                 else:
