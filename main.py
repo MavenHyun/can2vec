@@ -41,7 +41,7 @@ sae_mRNA_dec1 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer1", sae_mRNA_dec2
 sae_mRNA_opti = sae_mRNA.construct_Optimizer("mRNA_Optimizer", sae_mRNA_dec1.result, sae_mRNA.input_data, 0.4, 0)
 product_mRNA = sae_mRNA.initiate(sae_mRNA_opti, 500, sae_mRNA_enc3)
 
-total_hidden_nodes = 4600
+total_hidden_nodes = 2300
 
 sae_cli.print_result(sae_cli_opti)
 sae_mut.print_result(sae_mut_opti)
