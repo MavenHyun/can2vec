@@ -104,6 +104,8 @@ class Optimizer:
                     break
                 else:
                     num_train -= 1
+            if num_train % 100 == 0:
+                print("Training Cost:", train_cost, "Evaluation Cost: ", eval_cost)
         test_cost = session.run(self.cost, feed_dict=test_dict)
         self.result_iter = num_train
         self.result_test = test_cost
