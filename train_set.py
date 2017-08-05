@@ -40,13 +40,12 @@ class data_set:
             elif self.X_CNV[i, 0] == 1.0: self.X_CNV[i, 0] = 0.75
             else: self.X_CNV[i, 0] = 1
 
-        '''
         for i in range(self.X_mRNA.shape[1]):
             mean, stdv = st.mean(self.X_mRNA[:, i]), st.stdev(self.X_mRNA[:, i])
             if (stdv != 0):
                 for j in range(self.X_mRNA.shape[0]):
                     self.X_mRNA[j, i] = (self.X_mRNA[j, i] - mean) / stdv
-        '''
+
         df = pd.read_csv(self.file_name2, '\t')
         raw_input = df.values[:, 1:]
         self.Y = np.array(raw_input).transpose()

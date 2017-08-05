@@ -88,9 +88,9 @@ class Optimizer:
             else:
                 self.opti = tf.train.GradientDescentOptimizer(learn_rate).minimize(self.cost)
 
-    def optimize_sa(self, session, train_dict, eval_dict, test_dict, force_epochs, encoder):
+    def optimize_sa(self, session, train_dict, eval_dict, test_dict, epochs, encoder):
         diff, num_train, delta = 1.0, 0, 100.0
-        while num_train < force_epochs:
+        while num_train < epochs:
             num_train += 1
             train_cost, _, = session.run([self.cost, self.opti], feed_dict=train_dict)
             eval_cost = session.run(self.cost, feed_dict=eval_dict)
@@ -99,11 +99,8 @@ class Optimizer:
                 old_diff = diff
             else:
                 delta, old_diff = abs(old_diff - diff), diff
-            if num_train == force_epochs:
-                if num_train > 10000 or delta > 0.00001 or diff > 0.001:
-                    break
-                else:
-                    num_train -= 1
+            if delta > 0.00001 or diff > 0.001:
+                break
             if num_train % 100 == 0:
                 print("Training Cost:", train_cost, "Evaluation Cost: ", eval_cost)
         test_cost = session.run(self.cost, feed_dict=test_dict)
