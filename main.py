@@ -58,7 +58,7 @@ maven = ma.multi_ae(tr, product_cli, product_mut, product_CNV, product_mRNA, tot
 
 maven_projector = maven.construct_Projector("Projection_Layer", 0)
 maven_predictor = maven.construct_Predictor("Prediction_Layer", maven_projector.result, 0)
-maven_pre_optimizer = maven.construct_Optimizer("Optimizer_S", maven_predictor.result, maven.inputs['answer_S'], 0.1, 0)
+maven_pre_optimizer = maven.construct_Optimizer("Optimizer_S", maven_predictor.result, maven.inputs['answer_S'], 0.000001, 5)
 maven.initiate(maven_pre_optimizer, 1000)
 
 

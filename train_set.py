@@ -33,18 +33,11 @@ class data_set:
         for i in range(self.X_cli.shape[0]):
             self.X_cli[i, 0] = (self.X_cli[i, 0] - mean) / stdv
 
-        for i in range(self.X_CNV.shape[0]):
-            if self.X_CNV[i, 0] == -2.0: self.X_CNV[i, 0] = 0
-            elif self.X_CNV[i, 0] == -1.0: self.X_CNV[i, 0] = 0.25
-            elif self.X_CNV[i, 0] == -0.0: self.X_CNV[i, 0] = 0.5
-            elif self.X_CNV[i, 0] == 1.0: self.X_CNV[i, 0] = 0.75
-            else: self.X_CNV[i, 0] = 1
-
         for i in range(self.X_mRNA.shape[1]):
-            mean, stdv = st.mean(self.X_mRNA[:, i]), st.stdev(self.X_mRNA[:, i])
-            if (stdv != 0):
+            min, max = np.min(self.X_mRNA[:, i]), np.max(self.X_mRNA[:, i])
+            if (max - min != 0):
                 for j in range(self.X_mRNA.shape[0]):
-                    self.X_mRNA[j, i] = (self.X_mRNA[j, i] - mean) / stdv
+                    self.X_mRNA[j, i] = (self.X_mRNA[j, i] - min) / (max - min)
 
         df = pd.read_csv(self.file_name2, '\t')
         raw_input = df.values[:, 1:]
