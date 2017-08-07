@@ -12,42 +12,30 @@ tr.data_split()
 
 
 sae_cli = sa.split_ae(tr.x_cli, False)
-sae_cli_enc1 = sae_cli.construct_Encoder("cli_Encoding_Layer1", sae_cli.input_data, sae_cli.F_num, 10, 1)
-sae_cli_dec1 = sae_cli.construct_Decoder("cli_Decoding_Layer1", sae_cli_enc1.result, 10, sae_cli.F_num, 1)
+sae_cli_enc1 = sae_cli.construct_Encoder("cli_Encoding_Layer", sae_cli.input_data, sae_cli.F_num, 10, 1)
+sae_cli_dec1 = sae_cli.construct_Decoder("cli_Decoding_Layer", sae_cli_enc1.result, 10, sae_cli.F_num, 1)
 sae_cli_opti = sae_cli.construct_Optimizer("cli_Optimizer", sae_cli_dec1.result, sae_cli.input_data, 0.1, 0)
 product_cli = sae_cli.initiate(sae_cli_opti, 5000, sae_cli_enc1)
 
 sae_mut = sa.split_ae(tr.x_mut, False)
-sae_mut_enc1 = sae_mut.construct_Encoder("mut_Encoding_Layer1", sae_mut.input_data, sae_mut.F_num, 40, 1)
-sae_mut_dec1 = sae_mut.construct_Decoder("mut_Decoding_Layer1", sae_mut_enc1.result, 40, sae_mut.F_num, 1)
+sae_mut_enc1 = sae_mut.construct_Encoder("mut_Encoding_Layer", sae_mut.input_data, sae_mut.F_num, 40, 1)
+sae_mut_dec1 = sae_mut.construct_Decoder("mut_Decoding_Layer", sae_mut_enc1.result, 40, sae_mut.F_num, 1)
 sae_mut_opti = sae_mut.construct_Optimizer("mut_Optimizer", sae_mut_dec1.result, sae_mut.input_data, 0.1, 0)
 product_mut = sae_mut.initiate(sae_mut_opti, 5000, sae_mut_enc1)
 
 sae_CNV = sa.split_ae(tr.x_CNV, False)
-sae_CNV_enc1 = sae_CNV.construct_Encoder("CNV_Encoding_Layer1", sae_CNV.input_data, sae_CNV.F_num, 550, 0)
-'''
-sae_CNV_enc2 = sae_CNV.construct_Encoder("CNV_Encoding_Layer2", sae_CNV_enc1.result, 550, 250, 0)
-sae_CNV_dec2 = sae_CNV.construct_Decoder("CNV_Decoding_Layer2", sae_CNV_enc2.result, 250, 550, 0)
-'''
-sae_CNV_dec1 = sae_CNV.construct_Decoder("CNV_Decoding_Layer1", sae_CNV_enc1.result, 550, sae_CNV.F_num, 0)
+sae_CNV_enc1 = sae_CNV.construct_Encoder("CNV_Encoding_Layer", sae_CNV.input_data, sae_CNV.F_num, 950, 0)
+sae_CNV_dec1 = sae_CNV.construct_Decoder("CNV_Decoding_Layer", sae_CNV_enc1.result, 950, sae_CNV.F_num, 0)
 sae_CNV_opti = sae_CNV.construct_Optimizer("CNV_Optimizer", sae_CNV_dec1.result, sae_CNV.input_data, 0.5, 0)
 product_CNV = sae_CNV.initiate(sae_CNV_opti, 5000, sae_CNV_enc1)
 
 sae_mRNA = sa.split_ae(tr.x_mRNA, False)
-sae_mRNA_enc1 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer1", sae_mRNA.input_data, sae_mRNA.F_num, 5000, 0)
-'''
-sae_mRNA_enc2 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer2", sae_mRNA_enc1.result, 10000, 8000, 0)
-sae_mRNA_enc3 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer3", sae_mRNA_enc2.result, 8000, 5000, 0)
-sae_mRNA_enc4 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer4", sae_mRNA_enc3.result, 5000, 1000, 0)
-sae_mRNA_dec4 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer4", sae_mRNA_enc4.result, 1000, 5000, 0)
-sae_mRNA_dec3 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer3", sae_mRNA_dec4.result, 5000, 8000, 0)
-sae_mRNA_dec2 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer2", sae_mRNA_dec3.result, 8000, 10000, 0)
-'''
-sae_mRNA_dec1 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer1", sae_mRNA_enc1.result, 5000, sae_mRNA.F_num, 0)
+sae_mRNA_enc1 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer", sae_mRNA.input_data, sae_mRNA.F_num, 5000, 0)
+sae_mRNA_dec1 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer", sae_mRNA_enc1.result, 5000, sae_mRNA.F_num, 0)
 sae_mRNA_opti = sae_mRNA.construct_Optimizer("mRNA_Optimizer", sae_mRNA_dec1.result, sae_mRNA.input_data, 0.88, 0)
 product_mRNA = sae_mRNA.initiate(sae_mRNA_opti, 5000, sae_mRNA_enc1)
 
-total_hidden_nodes = 5600
+total_hidden_nodes = 6000
 
 sae_cli.print_result(sae_cli_opti)
 sae_mut.print_result(sae_mut_opti)
@@ -59,7 +47,7 @@ maven = ma.multi_ae(tr, product_cli, product_mut, product_CNV, product_mRNA, tot
 maven_projector = maven.construct_Projector("Projection_Layer", 0)
 maven_predictor = maven.construct_Predictor("Prediction_Layer", maven_projector.result, 0)
 maven_pre_optimizer = maven.construct_Optimizer("Optimizer_S", maven_predictor.result, maven.inputs['answer_S'], 0.001, 5)
-maven.initiate(maven_pre_optimizer, 1000)
+maven.initiate(maven_pre_optimizer, 1)
 
 
 

@@ -1,6 +1,5 @@
 import tensorflow as tf
 import tf_components as tc
-import split_ae as sa
 # NumPy is often used to load, manipulate and preprocess data.
 
 class multi_ae:
@@ -58,7 +57,8 @@ class multi_ae:
     def initiate(self, optimizer, epochs):
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
+            summary_writer = tf.summary.FileWriter('output', graph=sess.graph)
             sess.run(init)
             optimizer.optimize_ma(sess, self.train_dict, self.eval_dict, self.test_dict, epochs)
-
+            summary_writer.close()
 

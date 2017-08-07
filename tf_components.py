@@ -19,8 +19,8 @@ class Encoder:
 class Decoder:
     def __init__(self, layer_name, input_ph, dim0, dim1, activation):
         with tf.name_scope(layer_name):
-            self.weights = tf.Variable(tf.random_normal([dim0, dim1]))
-            self.bias = tf.Variable(tf.random_normal([dim1]))
+            self.weights = tf.random_normal([dim0, dim1])
+            self.bias = tf.random_normal([dim1])
             if activation == 0:
                 self.result = tf.nn.relu(tf.add(tf.matmul(input_ph, self.weights), self.bias))
             elif activation == 1:
@@ -100,9 +100,9 @@ class Optimizer:
                 old_diff = diff
             else:
                 delta, old_diff = abs(old_diff - diff), diff
-            if num_train > 500 and (delta > 0.00001 or diff > 0.00001):
+            if num_train > 1001 and (delta < 0.0001 or diff > 0.001):
                 break
-            if num_train % 10 == 0:
+            if num_train % 100 == 0:
                 print("Training Cost:", train_cost, "Evaluation Cost: ", eval_cost)
         test_cost = session.run(self.cost, feed_dict=test_dict)
         self.result_iter = num_train
@@ -115,7 +115,6 @@ class Optimizer:
     def optimize_ma(self, session, train_dict, eval_dict, test_dict, epochs):
         for iter in range(epochs):
             train_cost, _, temp = session.run([self.cost, self.opti, self.temp], feed_dict=train_dict)
-            print(temp)
             eval_cost = session.run(self.cost, feed_dict=eval_dict)
             if iter % 100 == 0:
                 print("Training Cost: ", train_cost, "Evaluation Cost: ", eval_cost)
