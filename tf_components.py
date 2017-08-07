@@ -35,7 +35,7 @@ class Projector:
         with tf.name_scope(layer_name):
             self.weights = tf.get_variable(layer_name + "_W", shape=[dim, dim],
                                       initializer=tf.contrib.layers.xavier_initializer())
-            self.bias = tf.get_variable(shape=[dim], initializer=tf.contrib.layers.xavier_initializer())
+            self.bias = tf.get_variable(layer_name + "_B", shape=[dim], initializer=tf.contrib.layers.xavier_initializer())
             if activation == 0:
                 self.result = tf.nn.relu(tf.add(tf.matmul(input_ph, self.weights), self.bias))
             elif activation == 1:
