@@ -11,8 +11,8 @@ class split_ae:
             self.F_num, self.D_mode, self.D_min = data_set[0].shape[1], denoise, 0
 
         with tf.name_scope("Placeholders"):
-            self.input_data = tf.placeholder("float", [None, self.F_num])
-            self.answer_data = tf.placeholder("float", [None, self.F_num])
+            self.input_data = tf.placeholder("float32", [None, self.F_num])
+            self.answer_data = tf.placeholder("float32", [None, self.F_num])
 
         with tf.name_scope("Dictionaries"):
             self.train_dict = {self.input_data: self.X_train, self.answer_data: self.X_train}

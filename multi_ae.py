@@ -10,12 +10,12 @@ class multi_ae:
             self.H, self.F = total_hnodes, data_set.X.shape[1]
 
         with tf.name_scope("Placeholders"):
-            self.inputs = {'encoded_cli': tf.placeholder("float", [None, None]),
-                           'encoded_mut': tf.placeholder("float", [None, None]),
-                           'encoded_CNV': tf.placeholder("float", [None, None]),
-                           'encoded_mRNA': tf.placeholder("float", [None, None]),
-                           'answer_R': tf.placeholder("float", [None, self.F]),
-                           'answer_S': tf.placeholder("float", [None, 1])}
+            self.inputs = {'encoded_cli': tf.placeholder("float32", [None, None]),
+                           'encoded_mut': tf.placeholder("float32", [None, None]),
+                           'encoded_CNV': tf.placeholder("float32", [None, None]),
+                           'encoded_mRNA': tf.placeholder("float32", [None, None]),
+                           'answer_R': tf.placeholder("float32", [None, self.F]),
+                           'answer_S': tf.placeholder("float32", [None, 1])}
             self.feature_vector = tf.concat([self.inputs['encoded_cli'], self.inputs['encoded_mut'],
                                              self.inputs['encoded_CNV'], self.inputs['encoded_mRNA']], 1)
 

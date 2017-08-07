@@ -12,6 +12,7 @@ class data_set:
         c, m, v, r = 0, 0, 0, 0
 
         self.Z = np.array(df.values[:, :]).transpose()
+        self.N = self.Z.shape[0]
         for col in self.Z[0, :]:
             if "_Clinical" in col:
                 c += 1
@@ -48,12 +49,11 @@ class data_set:
             self.Y[i, 0] = (self.Y[i, 0] - mean) / stdv
         '''
 
-
     def data_split(self):
         # [train_set, eval_set, test_set]
-        self.x = np.split(self.X, [self.size_eval, self.size_test], axis=0)
+        self.all = np.split(self.X, [self.size_eval, self.size_test], axis=0)
         self.y = np.split(self.Y, [self.size_eval, self.size_test], axis=0)
-        self.x_cli = np.split(self.X_cli, [self.size_eval, self.size_test], axis=0)
-        self.x_mut = np.split(self.X_mut, [self.size_eval, self.size_test], axis=0)
-        self.x_CNV = np.split(self.X_CNV, [self.size_eval, self.size_test], axis=0)
-        self.x_mRNA = np.split(self.X_mRNA, [self.size_eval, self.size_test], axis=0)
+        self.cli = np.split(self.X_cli, [self.size_eval, self.size_test], axis=0)
+        self.mut = np.split(self.X_mut, [self.size_eval, self.size_test], axis=0)
+        self.CNV = np.split(self.X_CNV, [self.size_eval, self.size_test], axis=0)
+        self.mRNA = np.split(self.X_mRNA, [self.size_eval, self.size_test], axis=0)

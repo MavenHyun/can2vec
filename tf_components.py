@@ -76,6 +76,7 @@ class Optimizer:
     def __init__(self, layer_name, output_ph, answer_ph, learn_rate, train_meth):
         self.weights, self.bias, self.result_iter, self.result_test, self.products = 0, 0, 0, 0, 0
         with tf.name_scope(layer_name):
+            self.temp = output_ph
             self.cost = tf.reduce_mean(tf.pow(answer_ph - output_ph, 2))
             if train_meth == 0:
                 self.opti = tf.train.AdamOptimizer(learn_rate).minimize(self.cost)
@@ -113,7 +114,8 @@ class Optimizer:
 
     def optimize_ma(self, session, train_dict, eval_dict, test_dict, epochs):
         for iter in range(epochs):
-            train_cost, _, = session.run([self.cost, self.opti], feed_dict=train_dict)
+            train_cost, _, temp = session.run([self.cost, self.opti, self.temp], feed_dict=train_dict)
+            print(temp)
             eval_cost = session.run(self.cost, feed_dict=eval_dict)
             if iter % 100 == 0:
                 print("Training Cost: ", train_cost, "Evaluation Cost: ", eval_cost)
