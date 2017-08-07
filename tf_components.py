@@ -19,8 +19,8 @@ class Encoder:
 class Decoder:
     def __init__(self, layer_name, input_ph, dim0, dim1, activation):
         with tf.name_scope(layer_name):
-            self.weights = tf.random_normal([dim0, dim1])
-            self.bias = tf.random_normal([dim1])
+            self.weights = tf.Variable(tf.random_normal([dim0, dim1]))
+            self.bias = tf.Variable(tf.random_normal([dim1]))
             if activation == 0:
                 self.result = tf.nn.relu(tf.add(tf.matmul(input_ph, self.weights), self.bias))
             elif activation == 1:
@@ -33,8 +33,9 @@ class Decoder:
 class Projector:
     def __init__(self, layer_name, input_ph, dim, activation):
         with tf.name_scope(layer_name):
-            self.weights = tf.Variable(tf.random_normal([dim, dim]))
-            self.bias = tf.Variable(tf.random_normal([dim]))
+            self.weights = tf.get_variable(layer_name + "_W", shape=[dim, dim],
+                                      initializer=tf.contrib.layers.xavier_initializer())
+            self.bias = tf.get_variable(shape=[dim], initializer=tf.contrib.layers.xavier_initializer())
             if activation == 0:
                 self.result = tf.nn.relu(tf.add(tf.matmul(input_ph, self.weights), self.bias))
             elif activation == 1:
