@@ -25,17 +25,31 @@ product_mut = sae_mut.initiate(sae_mut_opti, 5000, sae_mut_enc1)
 
 sae_CNV = sa.split_ae(tr.x_CNV, False)
 sae_CNV_enc1 = sae_CNV.construct_Encoder("CNV_Encoding_Layer", sae_CNV.input_data, sae_CNV.F_num, 950, 0)
-sae_CNV_dec1 = sae_CNV.construct_Decoder("CNV_Decoding_Layer", sae_CNV_enc1.result, 950, sae_CNV.F_num, 0)
+
+sae_CNV_enc2 = sae_CNV.construct_Encoder("CNV_Encoding_Layer2", sae_CNV_enc1, 950, 600, 0)
+sae_CNV_enc3 = sae_CNV.construct_Encoder("CNV_Encoding_Layer3", sae_CNV_enc2, 600, 350, 0)
+sae_CNV_dec3 = sae_CNV.construct_Decoder("CNV_Decoding_Layer3", sae_CNV_enc3, 350, 600, 0)
+sae_CNV_dec2 = sae_CNV.construct_Decoder("CNV_Decoding_Layer2", sae_CNV_dec3, 600, 950, 0)
+
+sae_CNV_dec1 = sae_CNV.construct_Decoder("CNV_Decoding_Layer", sae_CNV_dec2.result, 950, sae_CNV.F_num, 0)
 sae_CNV_opti = sae_CNV.construct_Optimizer("CNV_Optimizer", sae_CNV_dec1.result, sae_CNV.input_data, 0.5, 0)
-product_CNV = sae_CNV.initiate(sae_CNV_opti, 5000, sae_CNV_enc1)
+product_CNV = sae_CNV.initiate(sae_CNV_opti, 5000, sae_CNV_enc3)
 
 sae_mRNA = sa.split_ae(tr.x_mRNA, False)
 sae_mRNA_enc1 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer", sae_mRNA.input_data, sae_mRNA.F_num, 5000, 0)
-sae_mRNA_dec1 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer", sae_mRNA_enc1.result, 5000, sae_mRNA.F_num, 0)
-sae_mRNA_opti = sae_mRNA.construct_Optimizer("mRNA_Optimizer", sae_mRNA_dec1.result, sae_mRNA.input_data, 0.88, 0)
-product_mRNA = sae_mRNA.initiate(sae_mRNA_opti, 5000, sae_mRNA_enc1)
 
-total_hidden_nodes = 6000
+sae_mRNA_enc2 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer2", sae_mRNA.input_data, 5000, 3500, 0)
+sae_mRNA_enc3 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer3", sae_mRNA.input_data, 3500, 2000, 0)
+sae_mRNA_enc4 = sae_mRNA.construct_Encoder("mRNA_Encoding_Layer4", sae_mRNA.input_data, 2000, 1600, 0)
+sae_mRNA_dec4 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer4", sae_mRNA.input_data, 1600, 2000, 0)
+sae_mRNA_dec3 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer3", sae_mRNA.input_data, 2000, 3500, 0)
+sae_mRNA_dec2 = sae_mRNA.construct_Decoder("mRNA_Encoding_Layer2", sae_mRNA.input_data, 3500, 5000, 0)
+
+sae_mRNA_dec1 = sae_mRNA.construct_Decoder("mRNA_Decoding_Layer", sae_mRNA_dec2.result, 5000, sae_mRNA.F_num, 0)
+sae_mRNA_opti = sae_mRNA.construct_Optimizer("mRNA_Optimizer", sae_mRNA_dec1.result, sae_mRNA.input_data, 0.88, 0)
+product_mRNA = sae_mRNA.initiate(sae_mRNA_opti, 5000, sae_mRNA_enc4)
+
+total_hidden_nodes = 2000
 
 sae_cli.print_result(sae_cli_opti)
 sae_mut.print_result(sae_mut_opti)
