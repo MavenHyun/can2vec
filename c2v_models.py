@@ -23,28 +23,26 @@ def white_magic(name, learn, cost):
     
 class NoviceSeer:
     #vali = 50, test = 30
-    def __init__(self, dataset, vali, test):
+    def __init__(self, dataset, num1, num2):
         
         with tf.name_scope("Basic_Settings"):
             self.D, self.N, self.S = dataset.X, dataset.X['all'].shape[0], dataset.Y
             self.P, self.W, self.B, self.R = {}, {}, {}, {}
             self.train_dict, self.vali_dict, self.test_dict = {}, {}, {}
-            self.size_vali = vali 
-            self.size_test = test - vali
+            self.size_train = num1
+            self.size_test = num1 + num2
             
     def leading_encoder(self, fea, dim, fun):
         
         with tf.name_scope(fea + "_Encoder"):
             self.P[fea] = tf.placeholder("float", [None, None])
-            self.d = np.split(self.D[fea], [self.size_vali, self.size_test], axis=0)
-            self.train_dict[self.P[fea]] = np.split(self.D[fea], [self.size_vali, self.size_test], axis=0)[0]
-            self.vali_dict[self.P[fea]] = np.split(self.D[fea], [self.size_vali, self.size_test], axis=0)[1]
-            self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_vali, self.size_test], axis=0)[2]
+            self.d = np.split(self.D[fea], [self.size_train, self.size_test], axis=0)
+            self.train_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[0]
+            self.vali_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[1]
+            self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
 
-            self.W[fea] = tf.get_variable(fea + "_W", shape=[self.D[fea].shape[1], dim],
-                                                                 initializer=tf.contrib.layers.xavier_initializer())
-            self.B[fea] = tf.get_variable(fea + "_B", shape=[dim], 
-                                                                 initializer=tf.contrib.layers.xavier_initializer())    
+            self.W[fea] = tf.Variable(tf.random_normal([self.D[fea].shape[1], dim]))
+            self.B[fea] = tf.Variable(tf.random_normal([dim]))
             self.R[fea] = black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea]), self.B[fea]), fun)
                                                     
             return self.R[fea]
@@ -53,16 +51,13 @@ class NoviceSeer:
         
         with tf.name_scope("Survivability_Predictor"):
             self.P['surviv'] = tf.placeholder("float", [None, 1])
-            self.train_dict[self.P['surviv']] = np.split(self.S, [self.size_vali, self.size_test], axis=0)[0]
-            self.vali_dict[self.P['surviv']] = np.split(self.S, [self.size_vali, self.size_test], axis=0)[1]
-            self.test_dict[self.P['surviv']] = np.split(self.S, [self.size_vali, self.size_test], axis=0)[2]
+            self.train_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[0]
+            self.vali_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[1]
+            self.test_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[2]
 
-            self.W['surviv'] = tf.get_variable("Surviv_W", shape=[dim, 1],
-                                                 initializer=tf.contrib.layers.xavier_initializer())
-            self.B['surviv'] = tf.get_variable("Surviv_B", shape=[1],
-                                                 initializer=tf.contrib.layers.xavier_initializer())
-            self.R['surviv'] = black_magic(tf.add(tf.matmul(target, self.W['surviv']),
-                                                  self.B['surviv']), fun)
+            self.W['surviv'] = tf.Variable(tf.random_normal([dim, 1]))
+            self.B['surviv'] = tf.Variable(tf.random_normal([1]))
+            self.R['surviv'] = black_magic(tf.add(tf.matmul(target, self.W['surviv']), self.B['surviv']), fun)
 
             return self.R['surviv']
 
