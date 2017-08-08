@@ -47,6 +47,15 @@ class NoviceSeer:
                                                     
             return self.R[fea]
 
+    def data_projector(self, target, dim, fun):
+
+        with tf.name_scope("Data_Projector"):
+            self.W['proj'] = tf.Variable(tf.random_normal([dim, dim]))
+            self.B['proj'] = tf.Variable(tf.random_normal([dim]))
+            self.R['proj'] = black_magic(tf.add(tf.matmul(target, self.W['proj']), self.B['proj']), fun)
+
+            return self.R['proj']
+
     def surv_predictor(self, target, dim, fun):
         
         with tf.name_scope("Survivability_Predictor"):
@@ -66,18 +75,18 @@ class NoviceSeer:
         cost = tf.reduce_mean(tf.pow(result - answer, 2))
         opti = white_magic(meth, learn, cost)
 
-        for iter in range(epochs):
+        with tf.Session() as sess:
+            train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
+                                                 sess.graph)
             init = tf.global_variables_initializer()
-            with tf.Session() as sess:
-                sess.run(init)
+            sess.run(init)
+            for iter in range(epochs):
                 train_cost, _ = sess.run([cost, opti], feed_dict=self.train_dict)
                 vali_cost = sess.run(cost, feed_dict=self.vali_dict)
-                if iter % 100 == 0:
+                if iter % 500 == 0:
                     print("Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
-        test_cost = sess.run(cost, feed_dict=self.test_dict)
-        print("Test Cost: ",  test_cost)
+            test_cost = sess.run(cost, feed_dict=self.test_dict)
+            print("Test Cost: ",  test_cost)
 
 
-
-            
 
