@@ -287,7 +287,7 @@ class FarSeer:
         return result
 
     def slave_encoder(self, fea, fun, stack, input, weights, bias):
-        with tf.name_scope(fea + "_EncoderS_L" + str(stack)):
+        with tf.name_scope(name=fea + "_EncoderS_L" + str(stack)):
             self.W[fea + '_encS_' + stack] = weights
             self.B[fea + '_encS_' + stack] = bias
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_encS_' + str(stack)]),
@@ -337,10 +337,6 @@ class FarSeer:
                                                       self.B['surviv']), fun), self.drop)
 
             return result
-
-
-
-
 
     def mirror_image(self, fea, result, answer, meth, epochs, learn):
         with tf.name_scope("Encoder_Optimizer"):

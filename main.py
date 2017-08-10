@@ -20,7 +20,7 @@ maven.foresight(pre, maven.P['surviv'], 'adag', 500001, 0.1)
 
 '''
 
-maven = cv.FarSeer(tr, 45, 30, 0.75)
+maven = cv.FarSeer(tr, 45, 30, 0.666)
 
 enc = maven.top_encoder('cli', 100, 'relu')
 cli_T = maven.bot_decoder(enc, 'cli', 100, 'relu')
