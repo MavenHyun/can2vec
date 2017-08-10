@@ -180,7 +180,6 @@ class FarSeer:
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
-                merged_summ = tf.summary.merge()
                 train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
                                                      sess.graph)
                 init = tf.global_variables_initializer()
