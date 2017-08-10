@@ -28,22 +28,22 @@ maven.mirror_image('cli', cli_T, maven.P['cli'], 'adam', 50001, 1e-4)
 cli = maven.master_encoder('cli', 'relu')
 '''
 
-'''
+
 enc = maven.top_encoder('mut', 100, 'relu')
 mut_T = maven.bot_decoder(enc, 'mut', 100, 'relu')
 maven.mirror_image('mut', mut_T, maven.P['mut'], 'adam', 50001, 1e-4)
 mut = maven.master_encoder('mut', 'relu')
 
-'''
 
-enc = maven.top_encoder('CNV', 1000, 'raw')
-enc1 = maven.mid_encoder('CNV', 1000, 500, 'raw', enc)
-enc2 = maven.mid_encoder('CNV', 500, 100, 'raw', enc1)
-dec2 = maven.mid_decoder('CNV', 100, 500, 'raw', enc2)
-dec1 = maven.mid_decoder('CNV', 500, 1000, 'raw', dec2)
-CNV_T = maven.bot_decoder(dec1, 'CNV', 1000, 'raw')
+
+enc = maven.top_encoder('CNV', 1000, 'tanh')
+enc1 = maven.mid_encoder('CNV', 1000, 500, 'tanh', enc)
+enc2 = maven.mid_encoder('CNV', 500, 100, 'tanh', enc1)
+dec2 = maven.mid_decoder('CNV', 100, 500, 'tanh', enc2)
+dec1 = maven.mid_decoder('CNV', 500, 1000, 'tanh', dec2)
+CNV_T = maven.bot_decoder(dec1, 'CNV', 1000, 'tanh')
 maven.mirror_image('CNV', CNV_T, maven.P['CNV'], 'adam', 50001, 1e-4)
-CNV = maven.master_encoder('CNV', 'raw')
+CNV = maven.master_encoder('CNV', 'tanh')
 
 enc = maven.top_encoder('mRNA', 10000, 'relu')
 enc1 = maven.mid_encoder('mRNA', 10000, 5000, 'relu', enc)
