@@ -12,6 +12,7 @@ class data_set:
         c, m, v, r = 0, 0, 0, 0
 
         self.Z = np.array(df.values[:, :]).transpose()
+
         for col in self.Z[0, :]:
             if "_Clinical" in col:
                 c += 1
@@ -33,6 +34,7 @@ class data_set:
         self.Y = np.array(raw_input).transpose()
 
     def data_preprocess(self):
+
         for i in range(self.X['mRNA'].shape[1]):
             min, max = np.min(self.X['mRNA'][:, i]), np.max(self.X['mRNA'][:, i])
             if max - min != 0:
