@@ -7,7 +7,8 @@ def black_magic(operation, name):
     black_spell = {
         'relu': tf.nn.relu(operation),
         'sigmoid': tf.nn.sigmoid(operation),
-        'tanh': tf.nn.tanh(operation)
+        'tanh': tf.nn.tanh(operation),
+        'raw': operation
     }
     return black_spell[name]
 
@@ -108,8 +109,7 @@ class FarSeer:
             tf.summary.histogram('weights_decT_' + fea, self.W[fea + '_decT'])
             self.B[fea + '_decT'] = tf.Variable(tf.truncated_normal([self.D[fea].shape[1]]))
             tf.summary.histogram('bias_decT_' + fea, self.B[fea + '_decT'])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(enc, self.W[fea + '_decT']),
-                                                      self.B[fea + '_decT']), fun), self.drop)
+            result = black_magic(tf.add(tf.matmul(enc, self.W[fea + '_decT']), self.B[fea + '_decT']), fun)
             self.dec_stack = 0
         return result
 
@@ -135,8 +135,7 @@ class FarSeer:
             tf.summary.histogram('weights_encM_' + fea, self.W[fea + '_encM'])
             self.B[fea + '_encM'] = self.B[fea + '_encT']
             tf.summary.histogram('bias_encM_' + fea, self.B[fea + '_encM'])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encM']),
-                                                      self.B[fea + '_encM']), fun), self.drop)
+            result = black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encM']), self.B[fea + '_encM']), fun)
             for i in range(1, self.enc_stack[fea] + 1):
                 result = self.slave_encoder(fea, fun, i, result,
                                             self.W[fea + '_encT_' + str(i)],
@@ -168,8 +167,7 @@ class FarSeer:
             self.B['surviv'] = tf.get_variable("surviv_B", shape=[1],
                                                initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('bias_pred', self.B['surviv'])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(target, self.W['surviv']), 
-                                                      self.B['surviv']), fun), self.drop)
+            result = black_magic(tf.add(tf.matmul(target, self.W['surviv']), self.B['surviv']), fun)
             return result
 
     def mirror_image(self, fea, result, answer, meth, epochs, learn):
