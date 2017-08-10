@@ -21,16 +21,18 @@ maven.foresight(pre, maven.P['surviv'], 'adag', 500001, 0.1)
 '''
 
 maven = cv.FarSeer(tr, 45, 30, 0.666)
-
+'''
 enc = maven.top_encoder('cli', 100, 'relu')
 cli_T = maven.bot_decoder(enc, 'cli', 100, 'relu')
 maven.mirror_image('cli', cli_T, maven.P['cli'], 'adam', 50001, 1e-4)
 cli = maven.master_encoder('cli', 'relu')
+'''
 
 enc = maven.top_encoder('mut', 100, 'relu')
 mut_T = maven.bot_decoder(enc, 'mut', 100, 'relu')
 maven.mirror_image('mut', mut_T, maven.P['mut'], 'adam', 50001, 1e-4)
 mut = maven.master_encoder('mut', 'relu')
+
 
 enc = maven.top_encoder('CNV', 1000, 'relu')
 enc1 = maven.mid_encoder('CNV', 1000, 500, 'relu', enc)
@@ -57,7 +59,7 @@ dec3 = maven.mid_encoder('mRNA', 1000, 2500, 'relu', dec4)
 dec2 = maven.mid_encoder('mRNA', 2500, 5000, 'relu', dec3)
 dec1 = maven.mid_encoder('mRNA', 5000, 10000, 'relu', dec2)
 mRNA_T = maven.bot_decoder(dec1, 'mRNA', 10000, 'relu')
-maven.mirror_image('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 10001, 0.1)
+maven.mirror_image('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 50001, 0.1)
 mRNA = maven.master_encoder('mRNA', 'relu')
 
 vector = tf.concat([cli, mut, CNV, mRNA], 1)

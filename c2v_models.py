@@ -287,7 +287,7 @@ class FarSeer:
         return result
 
     def slave_encoder(self, fea, fun, stack, input, weights, bias):
-        with tf.name_scope(name=fea + "_EncoderS_L" + str(stack)):
+        with tf.name_scope(fea + "_EncoderS_L" + str(stack)):
             self.W[fea + '_encS_' + stack] = weights
             self.B[fea + '_encS_' + stack] = bias
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_encS_' + str(stack)]),
@@ -307,7 +307,7 @@ class FarSeer:
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encM']),
                                                       self.B[fea + '_encM']), fun), self.drop)
             for i in range(1, self.enc_stack[fea] + 1):
-                result = self.slave_encoder(result, fun, i, result,
+                result = self.slave_encoder(fea, fun, i, result,
                                             self.W[fea + '_encT_' + str(i)],
                                             self.B[fea + '_encT_' + str(i)])
         return result
