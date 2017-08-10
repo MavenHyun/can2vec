@@ -171,7 +171,7 @@ class FarSeer:
                         break
                     old_train = train_cost
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
-                print("Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
+                print("Feature", fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
                       "Final Learning Rate: ", learn)
 
     def foresight(self, result, answer, meth, epochs, learn):
