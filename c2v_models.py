@@ -55,12 +55,13 @@ class FarSeer:
             self.train_dict, self.vali_dict, self.test_dict = {}, {}, {}
             self.size_train, self.size_test = num1, num1 + num2
             #  For stacked encoders and projectors
-            self.enc_stack, self.dec_stack, self.pro_stack = {}, 0, 0
+            self.enc_stack, self.dec_stack, self.pro_stack = {}, {}, 0
             # Dropout!
             self.drop = drop
 
     def top_encoder(self, fea, dim, fun):
         self.enc_stack[fea] = 0
+        self.dec_stack[fea] = 0
         with tf.name_scope("PHD_for_" + fea + "_Training"):
             self.P[fea] = tf.placeholder("float", [None, None])
             self.train_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[0]
@@ -92,15 +93,16 @@ class FarSeer:
         return result
     
     def mid_decoder(self, fea, dim0, dim1, fun, input):
-        with tf.name_scope(fea + "_Decoder_L" + str(self.dec_stack)):
-            self.W[fea + '_decT_' + str(self.dec_stack)] = tf.Variable(tf.truncated_normal([dim0, dim1]))
+        self.dec_stack[fea] += 1
+        with tf.name_scope(fea + "_Decoder_L" + str(self.dec_stack[fea])):
+            self.W[fea + '_decT_' + str(self.dec_stack[fea])] = tf.Variable(tf.truncated_normal([dim0, dim1]))
             tf.summary.histogram('weights_decT_' + fea + '_' + str(self.dec_stack[fea]),
                                  self.W[fea + '_decT_' + str(self.dec_stack[fea])])
-            self.B[fea + '_decT_' + str(self.dec_stack)] = tf.Variable(tf.truncated_normal([dim1]))
+            self.B[fea + '_decT_' + str(self.dec_stack[fea])] = tf.Variable(tf.truncated_normal([dim1]))
             tf.summary.histogram('bias_decT_' + fea + '_' + str(self.dec_stack[fea]),
                                  self.B[fea + '_decT_' + str(self.dec_stack[fea])])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_decT_' + str(self.dec_stack)]),
-                                                      self.B[fea + '_decT_' + str(self.dec_stack)]), fun), self.drop)
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_decT_' + str(self.dec_stack[fea])]),
+                                                      self.B[fea + '_decT_' + str(self.dec_stack[fea])]), fun), self.drop)
         return result
 
     def bot_decoder(self, enc, fea, dim, fun):

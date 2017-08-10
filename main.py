@@ -28,11 +28,13 @@ maven.mirror_image('cli', cli_T, maven.P['cli'], 'adam', 50001, 1e-4)
 cli = maven.master_encoder('cli', 'relu')
 '''
 
+'''
 enc = maven.top_encoder('mut', 100, 'relu')
 mut_T = maven.bot_decoder(enc, 'mut', 100, 'relu')
 maven.mirror_image('mut', mut_T, maven.P['mut'], 'adam', 50001, 1e-4)
 mut = maven.master_encoder('mut', 'relu')
 
+'''
 
 enc = maven.top_encoder('CNV', 1000, 'raw')
 enc1 = maven.mid_encoder('CNV', 1000, 500, 'raw', enc)
