@@ -62,11 +62,11 @@ mRNA_T = maven.bot_decoder(dec1, 'mRNA', 10000, 'relu')
 maven.mirror_image('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 50001, 0.1)
 mRNA = maven.master_encoder('mRNA', 'relu')
 
-vector = tf.concat([cli, mut, CNV, mRNA], 1)
+vector = tf.concat([mut, CNV, mRNA], 1)
 
-pro1 = maven.data_projector(vector, 400, 400, 'relu')
-pro2 = maven.data_projector(pro1, 400, 400, 'relu')
-pred = maven.surv_predictor(pro2, 400, 'relu')
+pro1 = maven.data_projector(vector, 300, 300, 'relu')
+pro2 = maven.data_projector(pro1, 300, 300, 'relu')
+pred = maven.surv_predictor(pro2, 300, 'relu')
 maven.foresight(pred, maven.P['surviv'], 'adag', 10001, 1e-6)
 
 
