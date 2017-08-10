@@ -57,17 +57,17 @@ class NoviceSeer:
             self.vali_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[1]
             self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
 
-            self.W[fea] = tf.Variable(tf.random_normal([self.D[fea].shape[1], dim]))
-            self.B[fea] = tf.Variable(tf.random_normal([dim]))
-            self.R[fea] = black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea]), self.B[fea]), fun)
+            self.W[fea] = tf.Variable(tf.truncated_normal([self.D[fea].shape[1], dim]))
+            self.B[fea] = tf.Variable(tf.truncated_normal([dim]))
+            result = black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea]), self.B[fea]), fun)
                                                     
-            return self.R[fea]
+            return result
 
     def data_projector(self, target, dim, fun):
 
         with tf.name_scope("Data_Projector"):
-            self.W['proj'] = tf.Variable(tf.random_normal([dim, dim]))
-            self.B['proj'] = tf.Variable(tf.random_normal([dim]))
+            self.W['proj'] = tf.Variable(tf.truncated_normal([dim, dim]))
+            self.B['proj'] = tf.Variable(tf.truncated_normal([dim]))
             self.R['proj'] = black_magic(tf.add(tf.matmul(target, self.W['proj']), self.B['proj']), fun)
 
             return self.R['proj']
@@ -80,8 +80,8 @@ class NoviceSeer:
             self.vali_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[1]
             self.test_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[2]
 
-            self.W['surviv'] = tf.Variable(tf.random_normal([dim, 1]))
-            self.B['surviv'] = tf.Variable(tf.random_normal([1]))
+            self.W['surviv'] = tf.Variable(tf.truncated_normal([dim, 1]))
+            self.B['surviv'] = tf.Variable(tf.truncated_normal([1]))
             self.R['surviv'] = black_magic(tf.add(tf.matmul(target, self.W['surviv']), self.B['surviv']), fun)
 
             return self.R['surviv']
@@ -158,16 +158,16 @@ class SeerAdept:
 
     def data_projector1(self, target, dim0, dim1, fun):
         with tf.name_scope("Data_Projector1"):
-            self.W['proj1'] = tf.Variable(tf.random_normal([dim0, dim1]))
-            self.B['proj1'] = tf.Variable(tf.random_normal([dim1]))
+            self.W['proj1'] = tf.Variable(tf.truncated_normal([dim0, dim1]))
+            self.B['proj1'] = tf.Variable(tf.truncated_normal([dim1]))
             self.R['proj1'] = black_magic(tf.add(tf.matmul(target, self.W['proj1']), self.B['proj1']), fun)
         #Individualization is needed!
             return self.R['proj1']
 
     def data_projector2(self, target, dim0, dim1, fun):
         with tf.name_scope("Data_Projector2"):
-            self.W['proj2'] = tf.Variable(tf.random_normal([dim0, dim1]))
-            self.B['proj2'] = tf.Variable(tf.random_normal([dim1]))
+            self.W['proj2'] = tf.Variable(tf.truncated_normal([dim0, dim1]))
+            self.B['proj2'] = tf.Variable(tf.truncated_normal([dim1]))
             self.R['proj2'] = black_magic(tf.add(tf.matmul(target, self.W['proj2']), self.B['proj2']), fun)
         #Individualization is needed!
             return self.R['proj2']
@@ -235,7 +235,7 @@ class SeerAdept:
 
 class FarSeer:
     # vali = 50, test = 30
-    def __init__(self, dataset, num1, num2):
+    def __init__(self, dataset, num1, num2, drop):
         with tf.name_scope("Basic_Settings"):
             self.D, self.N, self.S = dataset.X, dataset.X['all'].shape[0], dataset.Y
             self.P, self.W, self.B, self.R = {}, {}, {}, {}
@@ -243,6 +243,7 @@ class FarSeer:
             self.size_train = num1
             self.size_test = num1 + num2
             self.enc_stack, self.dec_stack, self.pro_stack = {}, 0, 0
+            self.drop = drop
 
     def top_encoder(self, fea, dim, fun):
         self.enc_stack[fea] = 0
@@ -253,34 +254,35 @@ class FarSeer:
             self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
 
         with tf.name_scope(fea + "_Encoder"):
-            self.W[fea + '_encT'] = tf.Variable(tf.random_normal([self.D[fea].shape[1], dim]))
-            self.B[fea + '_encT'] = tf.Variable(tf.random_normal([dim]))
-            result = black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encT']),
-                                        self.B[fea + '_encT']), fun)
+            self.W[fea + '_encT'] = tf.Variable(tf.truncated_normal([self.D[fea].shape[1], dim]))
+            self.B[fea + '_encT'] = tf.Variable(tf.truncated_normal([dim]))
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encT']),
+                                                      self.B[fea + '_encT']), fun), self.drop)
         return result
 
     def mid_encoder(self, fea, dim0, dim1, fun, input):
         self.enc_stack[fea] += 1
         with tf.name_scope(fea + "_Encoder_L" + str(self.enc_stack[fea])):
-            self.W[fea + '_encT_' + str(self.enc_stack[fea])] = tf.Variable(tf.random_normal([dim0, dim1]))
-            self.B[fea + '_encT_' + str(self.enc_stack[fea])] = tf.Variable(tf.random_normal([dim1]))
-            result = black_magic(tf.add(tf.matmul(input, self.W[fea + '_encT_' + str(self.enc_stack[fea])]),
-                                        self.B[fea + '_encT_' + str(self.enc_stack[fea])]), fun)
+            self.W[fea + '_encT_' + str(self.enc_stack[fea])] = tf.Variable(tf.truncated_normal([dim0, dim1]))
+            self.B[fea + '_encT_' + str(self.enc_stack[fea])] = tf.Variable(tf.truncated_normal([dim1]))
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_encT_' + str(self.enc_stack[fea])]),
+                                                      self.B[fea + '_encT_' + str(self.enc_stack[fea])]), fun), self.drop)
         return result
     
     def mid_decoder(self, fea, dim0, dim1, fun, input):
         with tf.name_scope(fea + "_Decoder_L" + str(self.dec_stack)):
-            self.W[fea + '_decT_' + str(self.dec_stack)] = tf.Variable(tf.random_normal([dim0, dim1]))
-            self.B[fea + '_decT_' + str(self.dec_stack)] = tf.Variable(tf.random_normal([dim1]))
-            result = black_magic(tf.add(tf.matmul(input, self.W[fea + '_decT_' + str(self.dec_stack)]),
-                                        self.B[fea + '_decT_' + str(self.dec_stack)]), fun)
+            self.W[fea + '_decT_' + str(self.dec_stack)] = tf.Variable(tf.truncated_normal([dim0, dim1]))
+            self.B[fea + '_decT_' + str(self.dec_stack)] = tf.Variable(tf.truncated_normal([dim1]))
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_decT_' + str(self.dec_stack)]),
+                                                      self.B[fea + '_decT_' + str(self.dec_stack)]), fun), self.drop)
         return result
 
     def bot_decoder(self, enc, fea, dim, fun):
         with tf.name_scope(fea + "_Decoder"):
-            self.W[fea + '_decT'] = tf.Variable(tf.random_normal([dim, self.D[fea].shape[1]]))
-            self.B[fea + '_decT'] = tf.Variable(tf.random_normal([self.D[fea].shape[1]]))
-            result = black_magic(tf.add(tf.matmul(enc, self.W[fea + '_decT']), self.B[fea + '_decT']), fun)
+            self.W[fea + '_decT'] = tf.Variable(tf.truncated_normal([dim, self.D[fea].shape[1]]))
+            self.B[fea + '_decT'] = tf.Variable(tf.truncated_normal([self.D[fea].shape[1]]))
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(enc, self.W[fea + '_decT']),
+                                                      self.B[fea + '_decT']), fun), self.drop)
             self.dec_stack = 0
         return result
 
@@ -288,8 +290,8 @@ class FarSeer:
         with tf.name_scope(fea + "_EncoderS_L" + str(stack)):
             self.W[fea + '_encS_' + stack] = weights
             self.B[fea + '_encS_' + stack] = bias
-            result = black_magic(tf.add(tf.matmul(input, self.W[fea + '_encS_' + str(stack)]),
-                                 self.B[fea + '_encS_' + str(stack)]), fun)
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_encS_' + str(stack)]),
+                                                      self.B[fea + '_encS_' + str(stack)]), fun), self.drop)
         return result
 
     def master_encoder(self, fea, fun):
@@ -302,7 +304,8 @@ class FarSeer:
         with tf.name_scope(fea + "_EncoderM"):
             self.W[fea + '_encM'] = self.W[fea + '_encT']
             self.B[fea + '_encM'] = self.B[fea + '_encT']
-            result = black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encM']), self.B[fea + '_encM']), fun)
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encM']),
+                                                      self.B[fea + '_encM']), fun), self.drop)
             for i in range(1, self.enc_stack[fea] + 1):
                 result = self.slave_encoder(result, fun, i, result,
                                             self.W[fea + '_encT_' + str(i)],
@@ -312,10 +315,10 @@ class FarSeer:
     def data_projector(self, target, dim0, dim1, fun):
         self.pro_stack += 1
         with tf.name_scope("Data_Projector" + str(self.pro_stack)):
-            self.W['proj' + str(self.pro_stack)] = tf.Variable(tf.random_normal([dim0, dim1]))
-            self.B['proj' + str(self.pro_stack)] = tf.Variable(tf.random_normal([dim1]))
-            result = black_magic(tf.add(tf.matmul(target, self.W['proj' + str(self.pro_stack)]),
-                                        self.B['proj' + str(self.pro_stack)]), fun)
+            self.W['proj' + str(self.pro_stack)] = tf.Variable(tf.truncated_normal([dim0, dim1]))
+            self.B['proj' + str(self.pro_stack)] = tf.Variable(tf.truncated_normal([dim1]))
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(target, self.W['proj' + str(self.pro_stack)]),
+                                               self.B['proj' + str(self.pro_stack)]), fun), self.drop)
         return result
 
     def surv_predictor(self, target, dim, fun):
@@ -330,9 +333,14 @@ class FarSeer:
                                                initializer=tf.contrib.layers.xavier_initializer())
             self.B['surviv'] = tf.get_variable("surviv_B", shape=[1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            result = black_magic(tf.add(tf.matmul(target, self.W['surviv']), self.B['surviv']), fun)
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(target, self.W['surviv']), 
+                                                      self.B['surviv']), fun), self.drop)
 
             return result
+
+
+
+
 
     def mirror_image(self, fea, result, answer, meth, epochs, learn):
         with tf.name_scope("Encoder_Optimizer"):
