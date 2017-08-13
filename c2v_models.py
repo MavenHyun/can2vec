@@ -55,7 +55,8 @@ class FarSeer:
             self.train_dict, self.vali_dict, self.test_dict = {}, {}, {}
             self.size_train, self.size_test = num1, num1 + num2
             #  For stacked encoders and projectors
-            self.enc_stack, self.dec_stack, self.pro_stack = {}, {}, 0
+            self.enc_stack, self.pro_stack = {}, 0
+            self.dec_stack = {}
             # Dropout!
             self.drop = drop
 
@@ -112,7 +113,6 @@ class FarSeer:
             self.B[fea + '_decT'] = tf.Variable(tf.truncated_normal([self.D[fea].shape[1]]))
             tf.summary.histogram('bias_decT_' + fea, self.B[fea + '_decT'])
             result = black_magic(tf.add(tf.matmul(enc, self.W[fea + '_decT']), self.B[fea + '_decT']), fun)
-            self.dec_stack = 0
         return result
 
     def slave_encoder(self, fea, fun, stack, input, weights, bias):
