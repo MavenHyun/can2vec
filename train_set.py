@@ -38,7 +38,6 @@ class data_set:
 
     def data_preprocess(self):
 
-        
         for i in range(self.X['mRNA1'].shape[1]):
             min, max = np.min(self.X['mRNA1'][:, i]), np.max(self.X['mRNA1'][:, i])
             if max - min != 0:
