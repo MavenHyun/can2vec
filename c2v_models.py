@@ -161,7 +161,15 @@ class FarSeer:
             self.vali_dict[self.P['recon']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[1]
             self.test_dict[self.P['recon']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[2]
 
-
+        with tf.name_scope("Data_Reconstructor"):
+            self.W['recon'] = tf.get_variable("recon_W", shape=[dim, self.N],
+                                               initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('weights_pred', self.W['recon'])
+            self.B['recon'] = tf.get_variable("recon_B", shape=[self.N],
+                                               initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('bias_pred', self.B['recon'])
+            result = black_magic(tf.add(tf.matmul(target, self.W['recon']), self.B['recon']), fun)
+            return result
 
     def surv_predictor(self, target, dim, fun):
         with tf.name_scope("PHD_for_Predicting"):
@@ -207,6 +215,31 @@ class FarSeer:
 
     def foresight(self, result, answer, meth, epochs, learn):
         with tf.name_scope("Survivability_Optimizer"):
+            cost = tf.reduce_mean(tf.pow(result - answer, 2))
+            opti = white_magic(meth, learn, cost)
+            old_train, old_vali = 0, 0
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            with tf.Session(config=config) as sess:
+                train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
+                                                     sess.graph)
+                init = tf.global_variables_initializer()
+                sess.run(init)
+                for iter in range(epochs):
+                    train_cost, _ = sess.run([cost, opti], feed_dict=self.train_dict)
+                    vali_cost = sess.run(cost, feed_dict=self.vali_dict)
+                    print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
+                    if iter % 100 == 0:
+                        learn = grey_magic(learn, train_cost, old_train)
+                    if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
+                        break
+                        old_train = train_cost
+                test_cost = sess.run(cost, feed_dict=self.test_dict)
+                print("Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
+                      "Final Learning Rate: ", learn)
+
+    def reanimate(self, result, answer, meth, epochs, learn):
+        with tf.name_scope("Reconstruction_Optimizer"):
             cost = tf.reduce_mean(tf.pow(result - answer, 2))
             opti = white_magic(meth, learn, cost)
             old_train, old_vali = 0, 0
