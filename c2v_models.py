@@ -112,10 +112,10 @@ class FarSeer:
             name = fea + '_decT'
             self.W[name] = tf.get_variable(name='W_'+name, shape=[dim, self.D[fea].shape[1]],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_'+name)
+            tf.summary.histogram('W_'+name, self.W[name])
             self.B[name] = tf.get_variable(name='B_'+name, shape=[self.D[fea].shape[1]],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_'+name)
+            tf.summary.histogram('B_'+name, self.B[name])
             result = black_magic(tf.add(tf.matmul(enc, self.W[name]), self.B[name]), fun)
         return result
 
