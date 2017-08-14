@@ -56,7 +56,7 @@ class FarSeer:
             self.size_train, self.size_test = num1, num1 + num2
             #  For stacked encoders and projectors
             self.enc_stack, self.pro_stack = {}, 0
-            self.dec_stack = {}
+            self.dec_stack, self.saver = {}, {}
             # Dropout!
             self.drop = drop
 
@@ -70,49 +70,53 @@ class FarSeer:
             self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
 
         with tf.name_scope(fea + "_Encoder"):
-            self.W[fea + '_encT'] = tf.Variable(tf.truncated_normal([self.D[fea].shape[1], dim]),
-                                                name='weights_encT_'+fea)
-            tf.summary.histogram('weights_encT_' + fea, self.W[fea + '_encT'])
-            self.B[fea + '_encT'] = tf.Variable(tf.truncated_normal([dim]),
-                                                name='bias_encT_'+fea)
-            tf.summary.histogram('bias_encT_' + fea, self.B[fea + '_encT'])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encT']),
-                                                      self.B[fea + '_encT']), fun), self.drop)
+            name = fea + 'encT'
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[self.D[fea].shape[1], dim],
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('W_'+name, self.W[name])
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim],
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('B_'+name, self.B[name])
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[name]), self.B[name]), fun),
+                                   self.drop)
         return result
 
     def mid_encoder(self, fea, dim0, dim1, fun, input):
         self.enc_stack[fea] += 1
         with tf.name_scope(fea + "_Encoder_L" + str(self.enc_stack[fea])):
-            self.W[fea + '_encT_' + str(self.enc_stack[fea])] = tf.Variable(tf.truncated_normal([dim0, dim1]))
-            tf.summary.histogram('weights_encT_' + fea + '_' + str(self.enc_stack[fea]),
-                                 self.W[fea + '_encT_' + str(self.enc_stack[fea])])
-            self.B[fea + '_encT_' + str(self.enc_stack[fea])] = tf.Variable(tf.truncated_normal([dim1]))
-            tf.summary.histogram('bias_encT_' + fea + '_' + str(self.enc_stack[fea]),
-                                 self.B[fea + '_encT_' + str(self.enc_stack[fea])])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_encT_' + str(self.enc_stack[fea])]),
-                                                      self.B[fea + '_encT_' + str(self.enc_stack[fea])]), fun), self.drop)
+            name = fea + '_encT_' + str(self.enc_stack[fea])
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1], 
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('W_'+name, self.W[name])
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim1], 
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('B_'+name, self.B[name])
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name]), self.B[name]), fun), self.drop)
         return result
     
     def mid_decoder(self, fea, dim0, dim1, fun, input):
         self.dec_stack[fea] += 1
         with tf.name_scope(fea + "_Decoder_L" + str(self.dec_stack[fea])):
-            self.W[fea + '_decT_' + str(self.dec_stack[fea])] = tf.Variable(tf.truncated_normal([dim0, dim1]))
-            tf.summary.histogram('weights_decT_' + fea + '_' + str(self.dec_stack[fea]),
-                                 self.W[fea + '_decT_' + str(self.dec_stack[fea])])
-            self.B[fea + '_decT_' + str(self.dec_stack[fea])] = tf.Variable(tf.truncated_normal([dim1]))
-            tf.summary.histogram('bias_decT_' + fea + '_' + str(self.dec_stack[fea]),
-                                 self.B[fea + '_decT_' + str(self.dec_stack[fea])])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_decT_' + str(self.dec_stack[fea])]),
-                                                      self.B[fea + '_decT_' + str(self.dec_stack[fea])]), fun), self.drop)
+            name = fea + '_decT_' + str(self.dec_stack[fea])
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1], 
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('W_'+name, self.W[name])
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim1], 
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('B_'+name, self.B[name])
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name]), self.B[name]), fun), self.drop)
         return result
 
     def bot_decoder(self, enc, fea, dim, fun):
         with tf.name_scope(fea + "_Decoder"):
-            self.W[fea + '_decT'] = tf.Variable(tf.truncated_normal([dim, self.D[fea].shape[1]]))
-            tf.summary.histogram('weights_decT_' + fea, self.W[fea + '_decT'])
-            self.B[fea + '_decT'] = tf.Variable(tf.truncated_normal([self.D[fea].shape[1]]))
-            tf.summary.histogram('bias_decT_' + fea, self.B[fea + '_decT'])
-            result = black_magic(tf.add(tf.matmul(enc, self.W[fea + '_decT']), self.B[fea + '_decT']), fun)
+            name = fea + '_decT'
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim, self.D[fea].shape[1]],
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('W_'+name)
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[self.D[fea].shape[1]],
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            tf.summary.histogram('B_'+name)
+            result = black_magic(tf.add(tf.matmul(enc, self.W[name]), self.B[name]), fun)
         return result
 
     def slave_encoder(self, fea, fun, stack, input, weights, bias):
@@ -195,6 +199,7 @@ class FarSeer:
             old_train, old_vali = 0, 0
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
+            self.saver = tf.train.Saver()
             with tf.Session(config=config) as sess:
                 train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
                                                      sess.graph)
@@ -212,6 +217,7 @@ class FarSeer:
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
                 print("Feature", fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
                       "Final Learning Rate: ", learn)
+                save_path = self.saver.save(sess, "/tmp/model.ckpt")
 
     def foresight(self, result, answer, meth, epochs, learn):
         with tf.name_scope("Survivability_Optimizer"):
@@ -221,6 +227,7 @@ class FarSeer:
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
+                self.saver.restore(sess, "/tmp/model.ckpt")
                 train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
                                                      sess.graph)
                 init = tf.global_variables_initializer()
