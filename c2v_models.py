@@ -32,12 +32,12 @@ def grey_magic(learn, old_train, new_train):
     return mod_learn
 
 #  Automatically terminates training session
-def red_magic(learn, old_train, new_train, old_vali, new_vali, iter):
+def red_magic(learn, old_train, new_train, old_vali, new_vali, iter, epochs):
         # Halt this model when it produces the most optimal results.
-    if abs(new_train - new_vali) < 0.1 and new_train < 1 and new_vali < 1 and iter > 20000:
+    if abs(new_train - new_vali) < 0.1 and new_train < 1 and new_vali < 1 and iter > (epochs * 0.4):
         return True
         #  No progress, no reason to learn.
-    elif 0 <= old_vali - new_vali < 0.000001 and 0 <= old_train - new_train < 0.000001 and iter > 20000:
+    elif 0 <= old_vali - new_vali < 0.000001 and 0 <= old_train - new_train < 0.000001 and iter > (epochs * 0.4):
         return True
         #  Learning rate threshold
     elif learn < 1.0e-30:
@@ -144,9 +144,8 @@ class FarSeer:
                                             self.B[fea + '_encT_' + str(i)])
         return result
 
-    def data_projector(self, target, dim0, dim1, fun):
-        self.pro_stack += 1
-        with tf.name_scope("Data_Projector" + str(self.pro_stack)):
+    def the_alchemist(self, name, target, dim0, dim1, fun):
+        with tf.name_scope("The_Alchemist_of_" + name):
             self.W['proj' + str(self.pro_stack)] = tf.Variable(tf.truncated_normal([dim0, dim1]))
             tf.summary.histogram('weights_proj' + str(self.pro_stack),  self.W['proj' + str(self.pro_stack)])
             self.B['proj' + str(self.pro_stack)] = tf.Variable(tf.truncated_normal([dim1]))
@@ -187,9 +186,10 @@ class FarSeer:
                 for iter in range(epochs):
                     train_cost, _ = sess.run([cost, opti], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
-                    learn = grey_magic(learn, train_cost, old_train)
-                    print("Feature: ", fea, iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
-                    if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter) is True:
+                    if iter % (epochs / 500) == 0:
+                        learn = grey_magic(learn, train_cost, old_train)
+                        print("Feature: ", fea, iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
+                    if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
                     old_train = train_cost
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
@@ -214,8 +214,7 @@ class FarSeer:
                     print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
                     if iter % 100 == 0:
                         learn = grey_magic(learn, train_cost, old_train)
-
-                    if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter) is True:
+                    if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
                         old_train = train_cost
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
