@@ -1,5 +1,3 @@
-import multi_ae as ma
-import split_ae as sa
 import train_set as ts
 import c2v_models as cv
 import tensorflow as tf
