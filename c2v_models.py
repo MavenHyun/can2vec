@@ -213,7 +213,7 @@ class FarSeer:
                     train_cost, _ = sess.run([cost, opti], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
                     print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
-                    if iter % (epochs / 100) == 0:
+                    if iter % 100 == 0:
                         learn = grey_magic(learn, train_cost, old_train)
 
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter) is True:
