@@ -60,6 +60,16 @@ class FarSeer:
             # Dropout!
             self.drop = drop
 
+    def not_encoder(self, fea):
+        with tf.name_scope("PHD_for_" + fea + "_Training"):
+            self.P[fea] = tf.placeholder("float", [None, None])
+            self.train_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[0]
+            self.vali_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[1]
+            self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
+            result = self.P[fea]
+
+        return result
+
     def top_encoder(self, fea, dim, fun):
         self.enc_stack[fea] = 0
         self.dec_stack[fea] = 0
@@ -199,14 +209,15 @@ class FarSeer:
             old_train, old_vali = 0, 0
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
-            self.saver = tf.train.Saver()
+            saver = tf.train.Saver()
             with tf.Session(config=config) as sess:
                 train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
                                                      sess.graph)
+                train_merged = tf.summary.merge_all()
                 init = tf.global_variables_initializer()
                 sess.run(init)
                 for iter in range(epochs):
-                    train_cost, _ = sess.run([cost, opti], feed_dict=self.train_dict)
+                    train_cost, _, summ = sess.run([cost, opti, train_merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
                     if iter % 500 == 0:
                         learn = grey_magic(learn, train_cost, old_train)
@@ -214,33 +225,35 @@ class FarSeer:
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
                     old_train = train_cost
+                    train_writer.add_summary(summ, iter)
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
                 print("Feature", fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
                       "Final Learning Rate: ", learn)
-                save_path = self.saver.save(sess, "/tmp/model.ckpt")
+                save_path = saver.save(sess, "C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/tmp/model.ckpt")
 
     def foresight(self, result, answer, meth, epochs, learn):
         with tf.name_scope("Survivability_Optimizer"):
+            saver = tf.train.Saver()
             cost = tf.reduce_mean(tf.pow(result - answer, 2))
             opti = white_magic(meth, learn, cost)
             old_train, old_vali = 0, 0
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
-                self.saver.restore(sess, "/tmp/model.ckpt")
+                init = tf.global_variables_initializer()
+                saver.restore(sess, "C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/tmp/model.ckpt")
                 train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
                                                      sess.graph)
-                init = tf.global_variables_initializer()
                 sess.run(init)
                 for iter in range(epochs):
                     train_cost, _ = sess.run([cost, opti], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
-                    print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
-                    if iter % 100 == 0:
+                    if iter % 500 == 0:
+                        print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
                         learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
-                        old_train = train_cost
+                    old_train = train_cost
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
                 print("Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
                       "Final Learning Rate: ", learn)
@@ -265,7 +278,7 @@ class FarSeer:
                         learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
-                        old_train = train_cost
+                    old_train = train_cost
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
                 print("Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
                       "Final Learning Rate: ", learn)

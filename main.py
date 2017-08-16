@@ -8,7 +8,7 @@ tr.data_preprocess()
 
 maven = cv.FarSeer(tr, 45, 30, 0.666)
 
-cli = maven.D['cli']
+cli = maven.not_encoder('cli')
 
 enc = maven.top_encoder('mRNA1', 4000, 'relu')
 enc1 = maven.mid_encoder('mRNA1', 4000, 2000, 'relu', enc)
@@ -73,11 +73,12 @@ dec1 = maven.mid_decoder('CNV', 100, 1000, 'tanh', enc1)
 CNV_T = maven.bot_decoder(dec1, 'CNV', 1000, 'tanh')
 maven.mirror_image('CNV', CNV_T, maven.P['CNV'], 'adam', 1001, 1e-3)
 CNV = enc1
-vector = tf.concat([cli, mut, CNV, mRNA1, mRNA2, mRNA3, mRNA3], 1)
+vector = tf.concat([mut, CNV, mRNA1, mRNA2, mRNA3, mRNA4], 1)
 
-pro = maven.the_alchemist('Survivability', vector, 619, 619, 'relu')
-pre = maven.surv_predictor(pro, 619, 'relu')
-maven.foresight(pre, maven.S, 'adag', 10001, 1e-3)
+pro = maven.the_alchemist('Survivability', vector, 600, 600, 'relu')
+pro2 = maven.the_alchemist('Survivability', pro, 600, 600, 'relu')
+pre = maven.surv_predictor(pro2, 600, 'relu')
+maven.foresight(pre, maven.P['surviv'], 'adam', 10001, 1e-3)
 
 
 
