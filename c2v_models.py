@@ -183,12 +183,12 @@ class FarSeer:
             self.test_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[2]
 
         with tf.name_scope("Survivability_Predictor"):
-            self.W['surviv'] = tf.get_variable("surviv_W", shape=[dim, 1],
+            self.W['surviv'] = tf.get_variable("W_surviv", shape=[dim, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('weights_pred', self.W['surviv'], ['main'])
-            self.B['surviv'] = tf.get_variable("surviv_B", shape=[1],
+            tf.summary.histogram('W_surviv', self.W['surviv'], ['main'])
+            self.B['surviv'] = tf.get_variable("B_surviv", shape=[1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('bias_pred', self.B['surviv'], ['main'])
+            tf.summary.histogram('B_surviv', self.B['surviv'], ['main'])
             result = black_magic(tf.add(tf.matmul(target, self.W['surviv']), self.B['surviv']), fun)
             return result
 
