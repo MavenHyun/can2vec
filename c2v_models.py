@@ -54,7 +54,9 @@ class FarSeer:
         with tf.name_scope("Basic_Settings"):
             self.D, self.N, self.S = dataset.X, dataset.X['all'].shape[0], dataset.Y
             self.P, self.W, self.B = {}, {}, {}
-            self.train_dict, self.vali_dict, self.test_dict, self.answer_dict = {}, {}, {}, {}
+            # For feeding dicts and saving variables
+            self.train_dict, self.vali_dict, self.test_dict, self.var_dict = {}, {}, {}, {}
+            # Train, Eval and Test
             self.size_train, self.size_test = num1, num1 + num2
             # For stacked encoders and projectors
             self.enc_stack, self.dec_stack, self.pro_stack = {}, {}, 0
@@ -87,10 +89,12 @@ class FarSeer:
                                            initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('W_' + name, self.W[name], collections=['main'])
+            self.var_dict['W_' + name] = self.W[name]
             self.B[name] = tf.get_variable(name='B_' + name, shape=[dim],
                                            initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
+            self.var_dict['B_' + name] = self.B[name]
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[name]), self.B[name]), fun),
                                    self.drop)
         return result
@@ -103,10 +107,12 @@ class FarSeer:
                                            initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('W_' + name, self.W[name], collections=['main'])
+            self.var_dict['W_' + name] = self.W[name]
             self.B[name] = tf.get_variable(name='B_' + name, shape=[dim1],
                                            initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
+            self.var_dict['B_' + name] = self.B[name]
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name]), self.B[name]), fun),
                                    self.drop)
         return result
@@ -193,7 +199,7 @@ class FarSeer:
             with tf.Session(config=config) as sess:
                 train_writer = tf.summary.FileWriter("./phase1/" + str(datetime.now()), sess.graph)
                 init = tf.global_variables_initializer()
-                saver = tf.train.Saver()
+                saver = tf.train.Saver(self.var_dict)
                 sess.run(init)
                 self.begin_training(self.item_list, sess, train_writer)
                 saver.save(sess, "./tmp/model_step1.ckpt")
