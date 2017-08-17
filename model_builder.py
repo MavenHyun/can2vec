@@ -42,7 +42,7 @@ def run_model(pretrain):
         maven.optimize_AEncoders()
 
     with tf.name_scope("Feature_Vector"):
-        vector = tf.concat([mRNA, CNV, mut. cli], 1)
+        vector = tf.concat([mRNA, CNV, mut, cli], 1)
 
     with tf.name_scope("Survivability_Prediction"):
         pro = maven.data_projector(vector, 600, 600, 'relu')
