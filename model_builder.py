@@ -13,14 +13,14 @@ def run_model(pretrain):
         cli = maven.not_encoder('cli')
 
     with tf.name_scope("mRNA_AEncoder"):
-        enc = maven.top_encoder('mRNA', 8000, 'relu')
-        enc1 = maven.mid_encoder('mRNA', 8000, 4000, 'relu', enc)
+        enc = maven.top_encoder('mRNA', 5000, 'relu')
+        enc1 = maven.mid_encoder('mRNA', 5000, 4000, 'relu', enc)
         enc2 = maven.mid_encoder('mRNA', 4000, 1000, 'relu', enc1)
         enc3 = maven.mid_encoder('mRNA', 1000, 400, 'relu', enc2)
         dec3 = maven.mid_decoder('mRNA', 400, 1000, 'relu', enc3)
         dec2 = maven.mid_decoder('mRNA', 1000, 4000, 'relu', dec3)
-        dec1 = maven.mid_decoder('mRNA', 4000, 8000, 'relu', dec2)
-        mRNA_T = maven.bot_decoder(dec1, 'mRNA', 8000, 'relu')
+        dec1 = maven.mid_decoder('mRNA', 4000, 5000, 'relu', dec2)
+        mRNA_T = maven.bot_decoder(dec1, 'mRNA', 5000, 'relu')
         mRNA = enc3
 
     with tf.name_scope("mut_AEncoder"):
