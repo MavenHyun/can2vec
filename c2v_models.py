@@ -84,10 +84,10 @@ class FarSeer:
             name = fea + '_encT'
             self.W[name] = tf.get_variable(name='W_'+name, shape=[self.D[fea].shape[1], dim],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_'+name, self.W[name])
+            tf.summary.histogram('W_'+name, self.W[name], collections=[fea])
             self.B[name] = tf.get_variable(name='B_'+name, shape=[dim],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_'+name, self.B[name])
+            tf.summary.histogram('B_'+name, self.B[name], collections=[fea])
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[name]), self.B[name]), fun),
                                    self.drop)
         return result
@@ -98,10 +98,10 @@ class FarSeer:
             name = fea + '_encT_' + str(self.enc_stack[fea])
             self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1], 
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_'+name, self.W[name])
+            tf.summary.histogram('W_'+name, self.W[name], collections=[fea])
             self.B[name] = tf.get_variable(name='B_'+name, shape=[dim1], 
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_'+name, self.B[name])
+            tf.summary.histogram('B_'+name, self.B[name], collections=[fea])
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name]), self.B[name]), fun), self.drop)
         return result
     
@@ -111,10 +111,10 @@ class FarSeer:
             name = fea + '_decT_' + str(self.dec_stack[fea])
             self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1], 
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_'+name, self.W[name])
+            tf.summary.histogram('W_'+name, self.W[name], collections=[fea])
             self.B[name] = tf.get_variable(name='B_'+name, shape=[dim1], 
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_'+name, self.B[name])
+            tf.summary.histogram('B_'+name, self.B[name], collections=[fea])
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name]), self.B[name]), fun), self.drop)
         return result
 
@@ -123,48 +123,20 @@ class FarSeer:
             name = fea + '_decT'
             self.W[name] = tf.get_variable(name='W_'+name, shape=[dim, self.D[fea].shape[1]],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_'+name, self.W[name])
+            tf.summary.histogram('W_'+name, self.W[name], collections=[fea])
             self.B[name] = tf.get_variable(name='B_'+name, shape=[self.D[fea].shape[1]],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_'+name, self.B[name])
+            tf.summary.histogram('B_'+name, self.B[name], collections=[fea])
             result = black_magic(tf.add(tf.matmul(enc, self.W[name]), self.B[name]), fun)
         return result
 
-    def slave_encoder(self, fea, fun, stack, input, weights, bias):
-        with tf.name_scope(fea + "_EncoderS_L" + str(stack)):
-            self.W[fea + '_encS_' + str(stack)] = weights
-            tf.summary.histogram('weights_encS_L' + str(stack) + '_' + fea, weights)
-            self.B[fea + '_encS_' + str(stack)] = bias
-            tf.summary.histogram('bias_encS_L' + str(stack) + '_' + fea, bias)
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[fea + '_encS_' + str(stack)]),
-                                                      self.B[fea + '_encS_' + str(stack)]), fun), self.drop)
-        return result
-
-    def master_encoder(self, fea, fun):
-        with tf.name_scope("PHD_for_" + fea + "_Encoding"):
-            self.P[fea] = tf.placeholder("float", [None, None])
-            self.train_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[0]
-            self.vali_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[1]
-            self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
-
-        with tf.name_scope(fea + "_EncoderM"):
-            self.W[fea + '_encM'] = self.W[fea + '_encT']
-            tf.summary.histogram('weights_encM_' + fea, self.W[fea + '_encM'])
-            self.B[fea + '_encM'] = self.B[fea + '_encT']
-            tf.summary.histogram('bias_encM_' + fea, self.B[fea + '_encM'])
-            result = black_magic(tf.add(tf.matmul(self.P[fea], self.W[fea + '_encM']), self.B[fea + '_encM']), fun)
-            for i in range(1, self.enc_stack[fea] + 1):
-                result = self.slave_encoder(fea, fun, i, result,
-                                            self.W[fea + '_encT_' + str(i)],
-                                            self.B[fea + '_encT_' + str(i)])
-        return result
 
     def the_alchemist(self, name, target, dim0, dim1, fun):
         with tf.name_scope("The_Alchemist_of_" + name):
             self.W['proj' + str(self.pro_stack)] = tf.Variable(tf.truncated_normal([dim0, dim1]))
-            tf.summary.histogram('weights_proj' + str(self.pro_stack),  self.W['proj' + str(self.pro_stack)])
+            tf.summary.histogram('weights_proj' + str(self.pro_stack),  self.W['proj' + str(self.pro_stack)], ['proj'])
             self.B['proj' + str(self.pro_stack)] = tf.Variable(tf.truncated_normal([dim1]))
-            tf.summary.histogram('bias_proj' + str(self.pro_stack),  self.B['proj' + str(self.pro_stack)])
+            tf.summary.histogram('bias_proj' + str(self.pro_stack),  self.B['proj' + str(self.pro_stack)], ['proj'])
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(target, self.W['proj' + str(self.pro_stack)]),
                                                self.B['proj' + str(self.pro_stack)]), fun), self.drop)
         return result
@@ -179,10 +151,10 @@ class FarSeer:
         with tf.name_scope("Data_Reconstructor"):
             self.W['recon'] = tf.get_variable("recon_W", shape=[dim, self.N],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('weights_pred', self.W['recon'])
+            tf.summary.histogram('weights_pred', self.W['recon'], ['recon'])
             self.B['recon'] = tf.get_variable("recon_B", shape=[self.N],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('bias_pred', self.B['recon'])
+            tf.summary.histogram('bias_pred', self.B['recon'], ['recon'])
             result = black_magic(tf.add(tf.matmul(target, self.W['recon']), self.B['recon']), fun)
             return result
 
@@ -196,10 +168,10 @@ class FarSeer:
         with tf.name_scope("Survivability_Predictor"):
             self.W['surviv'] = tf.get_variable("surviv_W", shape=[dim, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('weights_pred', self.W['surviv'])
+            tf.summary.histogram('weights_pred', self.W['surviv'], ['surviv'])
             self.B['surviv'] = tf.get_variable("surviv_B", shape=[1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('bias_pred', self.B['surviv'])
+            tf.summary.histogram('bias_pred', self.B['surviv'], ['surviv'])
             result = black_magic(tf.add(tf.matmul(target, self.W['surviv']), self.B['surviv']), fun)
             return result
 
@@ -207,7 +179,7 @@ class FarSeer:
         with tf.name_scope("Encoder_Optimizer_"):
             for item in self.item_list:
                 tf.summary.scalar('cost_' + item.fea, item.cost)
-            self.merged = tf.summary.merge_all()
+            self.merged_all = tf.summary.merge_all()
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
@@ -221,9 +193,10 @@ class FarSeer:
     def spell_cast(self, wolves, sess, tw):
         with tf.name_scope("Chain_Optimizer"):
             for wolf in wolves:
+                split_merge = tf.summary.merge(wolf.fea)
                 old_train, old_vali = 0, 0
                 for iter in range(wolf.epochs):
-                    train_cost, _, summ = sess.run([wolf.cost, wolf.opti, self.merged], feed_dict=self.train_dict)
+                    train_cost, _, summ = sess.run([wolf.cost, wolf.opti, split_merge], feed_dict=self.train_dict)
                     vali_cost = sess.run(wolf.cost, feed_dict=self.vali_dict)
                     if iter % 100 == 0:
                         wolf.learn = grey_magic(wolf.learn, train_cost, old_train)
