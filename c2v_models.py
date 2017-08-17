@@ -16,13 +16,13 @@ def black_magic(operation, name):
 #   Select your spell for optimization.
 def white_magic(name, learn, cost):
     white_spell = {
-        'adam': tf.train.AdamOptimizer(learn).minimize(cost),
-        'rms': tf.train.RMSPropOptimizer(learn).minimize(cost),
-        'adag': tf.train.AdagradOptimizer(learn).minimize(cost),
-        'adad': tf.train.AdadeltaOptimizer(learn).minimize(cost),
-        'grad': tf.train.GradientDescentOptimizer(learn).minimize(cost)
+        'adam': tf.train.AdamOptimizer,
+        'rms': tf.train.RMSPropOptimizer,
+        'adag': tf.train.AdagradOptimizer,
+        'adad': tf.train.AdadeltaOptimizer,
+        'grad': tf.train.GradientDescentOptimizer
     }
-    return white_spell[name]
+    return white_spell[name](learn).minimize(cost)
 
 #  Learning Rate decay, will consider one of the tf modules.
 def grey_magic(learn, old_train, new_train):
@@ -211,8 +211,7 @@ class FarSeer:
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
-                train_writer = tf.summary.FileWriter("./output/"+str(datetime.now()),
-                                                     sess.graph)
+                train_writer = tf.summary.FileWriter("./output/" + str(datetime.now()), sess.graph)
                 init = tf.global_variables_initializer()
                 saver = tf.train.Saver()
                 sess.run(init)
@@ -235,7 +234,7 @@ class FarSeer:
                     old_train = train_cost
                 test_cost = sess.run(wolf.cost, feed_dict=self.test_dict)
                 print("Feature", wolf.fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ",
-                      vali_cost, "Final Learning Rate: ", self.learn)
+                      vali_cost, "Final Learning Rate: ", wolf.learn)
 
     def foresight(self, result, answer, meth, epochs, learn):
         with tf.name_scope("Survivability_Optimizer"):
