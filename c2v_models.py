@@ -193,7 +193,7 @@ class FarSeer:
     def spell_cast(self, wolves, sess, tw):
         with tf.name_scope("Chain_Optimizer"):
             for wolf in wolves:
-                split_merge = tf.summary.merge(collections=[wolf.fea])
+                split_merge = tf.summary.merge_all(wolf.fea)
                 old_train, old_vali = 0, 0
                 for iter in range(wolf.epochs):
                     train_cost, _, summ = sess.run([wolf.cost, wolf.opti, split_merge], feed_dict=self.train_dict)
