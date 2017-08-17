@@ -235,7 +235,7 @@ class FarSeer:
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
                 init = tf.global_variables_initializer()
-                saver = tf.train.Saver()
+                saver = tf.train.Saver(self.var_dict)
                 train_writer = tf.summary.FileWriter("./phase2/" + str(datetime.now()), sess.graph,)
                 sess.run(init)
                 saver.restore(sess, "./tmp/model_step1.ckpt")
