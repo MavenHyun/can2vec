@@ -204,6 +204,8 @@ class FarSeer:
 
     def mirror_image(self):
         with tf.name_scope("Encoder_Optimizer_"):
+            for item in self.item_list:
+                tf.summary.histogram('cost_' + item.fea, item.cost)
             self.merged = tf.summary.merge_all()
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
@@ -223,7 +225,7 @@ class FarSeer:
                 for iter in range(wolf.epochs):
                     train_cost, _, summ = sess.run([wolf.cost, wolf.opti, self.merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(wolf.cost, feed_dict=self.vali_dict)
-                    if iter % (wolf.epochs / 20) == 0:
+                    if iter % 100 == 0:
                         wolf.learn = grey_magic(wolf.learn, train_cost, old_train)
                         print("Feature: ", wolf.fea, iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
                     if red_magic(wolf.learn, old_train, train_cost, old_vali, vali_cost, iter, wolf.epochs) is True:
@@ -295,4 +297,3 @@ class FeralSpirit:
             self.fea, self.result, self.meth, self.epochs, self.learn = fea, result, meth, epochs, learn
             self.cost = tf.reduce_mean(tf.pow(result - answer, 2))
             self.opti = white_magic(meth, learn, self.cost)
-            tf.summary.scalar('cost_'+fea, self.cost)
