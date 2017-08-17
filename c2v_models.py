@@ -182,7 +182,7 @@ class FarSeer:
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
-                train_writer = tf.summary.FileWriter("/output/", sess.graph) #+ str(datetime.now()), sess.graph)
+                train_writer = tf.summary.FileWriter("./output/" + str(datetime.now()), sess.graph)
                 init = tf.global_variables_initializer()
                 saver = tf.train.Saver()
                 sess.run(init)
@@ -225,7 +225,7 @@ class FarSeer:
             with tf.Session(config=config) as sess:
                 init = tf.global_variables_initializer()
                 saver = tf.train.Saver()
-                train_writer = tf.summary.FileWriter("/output/", sess.graph)
+                train_writer = tf.summary.FileWriter("./output/", sess.graph)
                 sess.run(init)
                 saver.restore(sess, "/tmp/model_step1.ckpt")
                 for iter in range(epochs):
