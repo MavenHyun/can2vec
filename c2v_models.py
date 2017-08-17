@@ -177,8 +177,6 @@ class FarSeer:
 
     def mirror_image(self):
         with tf.name_scope("Encoder_Optimizer_"):
-            for item in self.item_list:
-                tf.summary.scalar('cost_' + item.fea, item.cost)
             self.merged_all = tf.summary.merge_all()
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
@@ -193,6 +191,7 @@ class FarSeer:
     def spell_cast(self, wolves, sess, tw):
         with tf.name_scope("Chain_Optimizer"):
             for wolf in wolves:
+                tf.summary.scalar('cost_' + wolf.fea, wolf.cost, collections=[wolf.fea])
                 split_merge = tf.summary.merge_all(wolf.fea)
                 old_train, old_vali = 0, 0
                 for iter in range(wolf.epochs):
