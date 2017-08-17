@@ -207,8 +207,8 @@ class FarSeer:
                 for iter in range(opt.epochs):
                     train_cost, _, summ = sess.run([opt.cost, opt.opti, merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(opt.cost, feed_dict=self.vali_dict)
+                    opt.learn = grey_magic(opt.learn, train_cost, old_train)
                     if iter % 100 == 0:
-                        opt.learn = grey_magic(opt.learn, train_cost, old_train)
                         print("Feature: ", opt.fea, iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
                     if red_magic(opt.learn, old_train, train_cost, old_vali, vali_cost, iter, opt.epochs) is True:
                         break
