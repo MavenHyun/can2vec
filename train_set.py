@@ -30,7 +30,8 @@ class data_set:
                   'mRNA1': np.array(df.values[c + m + v:c + m + v + 4000, 1:]).transpose(),
                   'mRNA2': np.array(df.values[c + m + v + 4000:c + m + v + 8000, 1:]).transpose(),
                   'mRNA3': np.array(df.values[c + m + v + 8000:c + m + v + 12000, 1:]).transpose(),
-                  'mRNA4': np.array(df.values[c + m + v + 12000:c + m + v + r, 1:]).transpose()}
+                  'mRNA4': np.array(df.values[c + m + v + 12000:c + m + v + r, 1:]).transpose(),
+                  'mRNA': np.array(df.values[c + m + v:c + m + v + r, 1:]).transpose()}
 
         df = pd.read_csv(self.file_name2, '\t')
         raw_input = df.values[:, 1:]
@@ -61,6 +62,13 @@ class data_set:
             if max - min != 0:
                 for j in range(self.X['mRNA4'].shape[0]):
                     self.X['mRNA4'][j, i] = (self.X['mRNA4'][j, i] - min) / (max - min)
+        
+        for i in range(self.X['mRNA'].shape[1]):
+            min, max = np.min(self.X['mRNA'][:, i]), np.max(self.X['mRNA'][:, i])
+            if max - min != 0:
+                for j in range(self.X['mRNA'].shape[0]):
+                    self.X['mRNA'][j, i] = (self.X['mRNA'][j, i] - min) / (max - min)
+                    
 
         '''mean, stdv = st.mean(self.Y[:, 0]), st.stdev(self.Y[:, 0])
         for i in range(self.Y.shape[0]):

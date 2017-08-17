@@ -52,11 +52,12 @@ class FarSeer:
         with tf.name_scope("Basic_Settings"):
             self.D, self.N, self.S = dataset.X, dataset.X['all'].shape[0], dataset.Y
             self.P, self.W, self.B = {}, {}, {}
-            self.train_dict, self.vali_dict, self.test_dict = {}, {}, {}
+            self.train_dict, self.vali_dict, self.test_dict, self.answer_dict = {}, {}, {}, {}
             self.size_train, self.size_test = num1, num1 + num2
-            #  For stacked encoders and projectors
-            self.enc_stack, self.pro_stack = {}, 0
-            self.dec_stack, self.saver = {}, {}
+            # For stacked encoders and projectors
+            self.enc_stack, self.dec_stack, self.pro_stack = {}, {}, 0
+            # A list of costs and optimizers
+            self.item_list = []
             # Dropout!
             self.drop = drop
 
@@ -67,7 +68,6 @@ class FarSeer:
             self.vali_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[1]
             self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
             result = self.P[fea]
-
         return result
 
     def top_encoder(self, fea, dim, fun):
@@ -80,7 +80,7 @@ class FarSeer:
             self.test_dict[self.P[fea]] = np.split(self.D[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
 
         with tf.name_scope(fea + "_Encoder"):
-            name = fea + 'encT'
+            name = fea + '_encT'
             self.W[name] = tf.get_variable(name='W_'+name, shape=[self.D[fea].shape[1], dim],
                                            initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('W_'+name, self.W[name])
@@ -186,7 +186,7 @@ class FarSeer:
             return result
 
     def surv_predictor(self, target, dim, fun):
-        with tf.name_scope("PHD_for_Predicting"):
+        with tf.name_scope("PHD_for_Prediction"):
             self.P['surviv'] = tf.placeholder("float", [None, 1])
             self.train_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[0]
             self.vali_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[1]
@@ -202,58 +202,64 @@ class FarSeer:
             result = black_magic(tf.add(tf.matmul(target, self.W['surviv']), self.B['surviv']), fun)
             return result
 
-    def mirror_image(self, fea, result, answer, meth, epochs, learn):
-        with tf.name_scope("Encoder_Optimizer"):
-            cost = tf.reduce_mean(tf.pow(result - answer, 2))
-            opti = white_magic(meth, learn, cost)
-            old_train, old_vali = 0, 0
+    def mirror_image(self):
+        with tf.name_scope("Encoder_Optimizer_"):
+            self.merged = tf.summary.merge_all()
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
-            saver = tf.train.Saver()
             with tf.Session(config=config) as sess:
                 train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
                                                      sess.graph)
-                train_merged = tf.summary.merge_all()
                 init = tf.global_variables_initializer()
+                saver = tf.train.Saver()
                 sess.run(init)
-                for iter in range(epochs):
-                    train_cost, _, summ = sess.run([cost, opti, train_merged], feed_dict=self.train_dict)
-                    vali_cost = sess.run(cost, feed_dict=self.vali_dict)
-                    if iter % 500 == 0:
-                        learn = grey_magic(learn, train_cost, old_train)
-                        print("Feature: ", fea, iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
-                    if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
+                self.spell_cast(self.item_list, sess, train_writer)
+                saver.save(sess, "/tmp/model_step1.ckpt")
+
+    def spell_cast(self, wolves, sess, tw):
+        with tf.name_scope("Chain_Optimizer"):
+            for wolf in wolves:
+                old_train, old_vali = 0, 0
+                for iter in range(wolf.epochs):
+                    train_cost, _, summ = sess.run([wolf.cost, wolf.opti, self.merged], feed_dict=self.train_dict)
+                    vali_cost = sess.run(wolf.cost, feed_dict=self.vali_dict)
+                    if iter % (wolf.epochs / 20) == 0:
+                        wolf.learn = grey_magic(wolf.learn, train_cost, old_train)
+                        print("Feature: ", wolf.fea, iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
+                        tw.add_summary(summ, iter)
+                    if red_magic(wolf.learn, old_train, train_cost, old_vali, vali_cost, iter, wolf.epochs) is True:
                         break
                     old_train = train_cost
-                    train_writer.add_summary(summ, iter)
-                test_cost = sess.run(cost, feed_dict=self.test_dict)
-                print("Feature", fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
-                      "Final Learning Rate: ", learn)
-                save_path = saver.save(sess, "C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/tmp/model.ckpt")
+                test_cost = sess.run(wolf.cost, feed_dict=self.test_dict)
+                print("Feature", wolf.fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ",
+                      vali_cost, "Final Learning Rate: ", self.learn)
 
     def foresight(self, result, answer, meth, epochs, learn):
         with tf.name_scope("Survivability_Optimizer"):
-            saver = tf.train.Saver()
             cost = tf.reduce_mean(tf.pow(result - answer, 2))
             opti = white_magic(meth, learn, cost)
+            tf.summary.scalar('cost_survivability', cost)
+            merged = tf.summary.merge_all()
             old_train, old_vali = 0, 0
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
                 init = tf.global_variables_initializer()
-                saver.restore(sess, "C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/tmp/model.ckpt")
+                saver = tf.train.Saver()
                 train_writer = tf.summary.FileWriter("C:/Users/Arthur Keonwoo Kim/PycharmProjects/can2vec/output/",
                                                      sess.graph)
                 sess.run(init)
+                saver.restore(sess, "/tmp/model_step1.ckpt")
                 for iter in range(epochs):
-                    train_cost, _ = sess.run([cost, opti], feed_dict=self.train_dict)
+                    train_cost, _, summ = sess.run([cost, opti, merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
-                    if iter % 500 == 0:
+                    if iter % (epochs / 20) == 0:
                         print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
                         learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
                     old_train = train_cost
+                    train_writer.add_summary(summ, iter)
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
                 print("Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
                       "Final Learning Rate: ", learn)
@@ -282,3 +288,11 @@ class FarSeer:
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
                 print("Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
                       "Final Learning Rate: ", learn)
+
+class FeralSpirit:
+    def __init__(self, fea, result, answer, meth, epochs, learn):
+        with tf.name_scope("AE_Optimizer_"+fea):
+            self.fea, self.result, self.meth, self.epochs, self.learn = fea, result, meth, epochs, learn
+            self.cost = tf.reduce_mean(tf.pow(result - answer, 2))
+            self.opti = white_magic(meth, learn, self.cost)
+            tf.summary.scalar('cost_'+fea, self.cost)
