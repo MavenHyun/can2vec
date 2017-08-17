@@ -205,7 +205,7 @@ class FarSeer:
     def mirror_image(self):
         with tf.name_scope("Encoder_Optimizer_"):
             for item in self.item_list:
-                tf.summary.histogram('cost_' + item.fea, item.cost)
+                tf.summary.scalar('cost_' + item.fea, item.cost)
             self.merged = tf.summary.merge_all()
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
