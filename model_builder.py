@@ -36,16 +36,16 @@ def run_model(pretrain):
         CNV = enc1
 
     if pretrain is True:
-        maven.item_list.append(cv.FeralSpirit('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 1001, 1e-3))
-        maven.item_list.append(cv.FeralSpirit('mut', mut_T, maven.P['mut'], 'adam', 1001, 1e-3))
-        maven.item_list.append(cv.FeralSpirit('CNV', CNV_T, maven.P['CNV'], 'adam', 1001, 1e-3))
-        maven.mirror_image()
+        maven.item_list.append(cv.SplitOptimizer('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 1001, 1e-3))
+        maven.item_list.append(cv.SplitOptimizer('mut', mut_T, maven.P['mut'], 'adam', 1001, 1e-3))
+        maven.item_list.append(cv.SplitOptimizer('CNV', CNV_T, maven.P['CNV'], 'adam', 1001, 1e-3))
+        maven.optimize_AEncoders()
 
     with tf.name_scope("Feature_Vector"):
         vector = tf.concat([mRNA, CNV, mut. cli], 1)
 
     with tf.name_scope("Survivability_Prediction"):
-        pro = maven.the_alchemist('Survivability', vector, 600, 600, 'relu')
-        pro2 = maven.the_alchemist('Survivability', pro, 600, 600, 'relu')
+        pro = maven.data_projector(vector, 600, 600, 'relu')
+        pro2 = maven.data_projector(pro, 600, 600, 'relu')
         pre = maven.surv_predictor(pro2, 600, 'relu')
-        maven.foresight(pre, maven.P['surviv'], 'adam', 10001, 1e-4)
+        maven.optimize_SPredictor(pre, maven.P['surviv'], 'adam', 10001, 1e-4)
