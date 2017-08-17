@@ -226,9 +226,9 @@ class FarSeer:
                     if iter % (wolf.epochs / 20) == 0:
                         wolf.learn = grey_magic(wolf.learn, train_cost, old_train)
                         print("Feature: ", wolf.fea, iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
-                        tw.add_summary(summ, iter)
                     if red_magic(wolf.learn, old_train, train_cost, old_vali, vali_cost, iter, wolf.epochs) is True:
                         break
+                    tw.add_summary(summ, iter)
                     old_train = train_cost
                 test_cost = sess.run(wolf.cost, feed_dict=self.test_dict)
                 print("Feature", wolf.fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ",
@@ -259,7 +259,7 @@ class FarSeer:
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
                     old_train = train_cost
-                    train_writer.add_summary(summ, iter)
+                train_writer.add_summary(summ, iter)
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
                 print("Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost,
                       "Final Learning Rate: ", learn)
