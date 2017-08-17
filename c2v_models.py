@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from datetime import datetime
+import time
 import train_set as ts
 
 #   Select your spell for activation function.
@@ -195,11 +196,14 @@ class FarSeer:
                 split_merge = tf.summary.merge_all(wolf.fea)
                 old_train, old_vali = 0, 0
                 for iter in range(wolf.epochs):
+                    start_time = time.time()
                     train_cost, _, summ = sess.run([wolf.cost, wolf.opti, split_merge], feed_dict=self.train_dict)
                     vali_cost = sess.run(wolf.cost, feed_dict=self.vali_dict)
                     if iter % 100 == 0:
+                        epoch_time = time.time() - start_time
                         wolf.learn = grey_magic(wolf.learn, train_cost, old_train)
-                        print("Feature: ", wolf.fea, iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
+                        print("Feature: ", wolf.fea, iter, "Training Cost: ", train_cost,
+                              "Evaluation Cost: ", vali_cost, "Epoch Time: ", epoch_time)
                     if red_magic(wolf.learn, old_train, train_cost, old_vali, vali_cost, iter, wolf.epochs) is True:
                         break
                     tw.add_summary(summ, iter)
@@ -224,6 +228,7 @@ class FarSeer:
                 sess.run(init)
                 saver.restore(sess, "/tmp/model_step1.ckpt")
                 for iter in range(epochs):
+
                     train_cost, _, summ = sess.run([cost, opti, merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
                     if iter % (epochs / 20) == 0:
