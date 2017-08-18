@@ -48,4 +48,4 @@ def run_model(pretrain):
         pro = maven.data_projector(vector, 619, 619, 'relu')
         pro2 = maven.data_projector(pro, 619, 619, 'relu')
         pre = maven.surv_predictor(pro2, 619, 'relu')
-        maven.optimize_SPredictor(pre, maven.P['surviv'], 'adam', 10001, 1e-3)
+        maven.optimize_SPredictor(pre, maven.P['surviv'], 'adag', 10001, 1e-3)
