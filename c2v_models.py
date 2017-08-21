@@ -202,7 +202,7 @@ class FarSeer:
                 saver = tf.train.Saver(self.var_dict)
                 sess.run(init)
                 self.begin_training(self.item_list, sess, train_writer)
-                saver.save(sess, "./tmp/model_step1.ckpt")
+                saver.save(sess, "./saved/model_step1.ckpt")
 
     def begin_training(self, split_opts, sess, tw):
         with tf.name_scope("Begin_Training"):
@@ -238,7 +238,7 @@ class FarSeer:
                 saver = tf.train.Saver(self.var_dict)
                 train_writer = tf.summary.FileWriter("./PHASE2/" + str(datetime.now()), sess.graph,)
                 sess.run(init)
-                saver.restore(sess, "./tmp/model_step1.ckpt")
+                saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
                     train_cost, _, summ = sess.run([cost, opti, merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
