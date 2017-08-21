@@ -176,7 +176,7 @@ class FarSeer:
 
     '''
     def surv_predictor(self, target, dim, fun):
-        with tf.name_scope("PHD_for_Prediction"):
+        with tf.name_scope("PHD_4_Prediction"):
             self.P['surviv'] = tf.placeholder("float", [None, 1])
             self.train_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[0]
             self.vali_dict[self.P['surviv']] = np.split(self.S, [self.size_train, self.size_test, self.N], axis=0)[1]
