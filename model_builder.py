@@ -44,8 +44,8 @@ def run_model(pretrain):
     with tf.name_scope("Feature_Vector"):
         vector = tf.concat([mRNA, CNV, mut, cli], 1)
 
-    with tf.name_scope("Survivability_Prediction"):
-        pro = maven.data_projector(vector, 619, 1000, 'relu')
-        pro2 = maven.data_projector(pro, 1000, 619, 'relu')
+    with tf.name_scope("SPredictor"):
+        pro = maven.data_projector(vector, 619, 10000, 'relu')
+        pro2 = maven.data_projector(pro, 10000, 619, 'relu')
         pre = maven.surv_predictor(pro2, 619, 'relu')
         maven.optimize_SPredictor(pre, maven.P['surviv'], 'adag', 10001, 1e-3)

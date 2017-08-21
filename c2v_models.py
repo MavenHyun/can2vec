@@ -221,8 +221,8 @@ class FarSeer:
                     tw.add_summary(summ, iter)
                     old_train = train_cost
                 test_cost = sess.run(opt.cost, feed_dict=self.test_dict)
-                print("Feature: ", opt.fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: ",
-                      vali_cost, "Final Learning Rate: ", opt.learn)
+                print("Feature: ", opt.fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: "
+                      , vali_cost, "Final Learning Rate: ", opt.learn)
 
     def optimize_SPredictor(self, result, answer, meth, epochs, learn):
         with tf.name_scope("Train_SPredictor"):
