@@ -182,7 +182,7 @@ class FarSeer:
             return result
 
     def yield_concordance(self, pred, real, type):
-        samples = pred.shape[1]
+        samples = pred.shape[0]
         pairs, epairs, tied, x = 0, 0, 0, 0
         for i in range(samples):
             for j in range(samples):
@@ -203,9 +203,6 @@ class FarSeer:
                             x += 1
                     else:
                         x += 1
-            print(pairs)
-            print(epairs)
-            print(tied)
         result = (epairs + (tied / 2)) / pairs
         return result
 
