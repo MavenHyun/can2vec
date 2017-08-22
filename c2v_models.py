@@ -188,7 +188,7 @@ class FarSeer:
             for j in range(samples):
                 if i == j:
                     x += 1
-                elif self.C[type][i, 0] == 1 and self.C[type][j, 0] == 1:
+                elif self.C[type][i, 0] * self.C[type][j, 0] == 1.0:
                     x += 1
                 else:
                     pairs += 1
