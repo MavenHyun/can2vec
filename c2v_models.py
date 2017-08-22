@@ -53,7 +53,7 @@ class FarSeer:
     def __init__(self, dataset, num1, num2, drop):
         with tf.name_scope("Basic_Settings"):
             # Needs revamp!
-            self.D, self.N, self.S = dataset.X, dataset.X['all'].shape[0], dataset.Y
+            self.D, self.N, self.S, self.C = dataset.X, dataset.X['all'].shape[0], dataset.Y, dataset.Z
             self.P, self.W, self.B = {}, {}, {}
             # For feeding dicts and saving variables
             self.train_dict, self.vali_dict, self.test_dict, self.var_dict = {}, {}, {}, {}
@@ -64,6 +64,11 @@ class FarSeer:
             self.pro_stack, self.cox_stack = 0, 0
             # A list of costs and optimizers
             self.item_list = []
+            # For splitting censored data-set
+            self.CS = {}
+            self.CS['train'] = np.split(self.C, [self.size_train, self.size_test, self.N], axis=0)[0]
+            self.CS['eval'] = np.split(self.C, [self.size_train, self.size_test, self.N], axis=0)[1]
+            self.CS['test'] = np.split(self.C, [self.size_train, self.size_test, self.N], axis=0)[2]
             # Dropout!
             self.drop = drop
 
@@ -176,6 +181,31 @@ class FarSeer:
             result = black_magic(tf.add(tf.matmul(target, self.W['surviv']), self.B['surviv']), fun)
             return result
 
+    def yield_concordance(self, pred, real, type):
+        samples = pred.shape[1]
+        pairs, epairs, tied = 0, 0, 0
+        for i in range(samples):
+            for j in range(samples):
+                if i == j:
+                    continue
+                elif self.C[type][i, 0] == 1 and self.C[type][j, 0] == 1:
+                    continue
+                else:
+                    pairs += 1
+                    if i < j:
+                        if pred[i, 0] > pred[j, 0] and real[i, 0] > real[j, 0]:
+                            epairs += 1
+                        elif pred[i, 0] < pred[j, 0] and real[i, 0] < real[j, 0]:
+                            epairs += 1
+                        elif pred[i, 0] == pred[j, 0]
+                            tied += 1
+                        else:
+                            continue
+                    else:
+                        continue
+        result = (epairs + (tied / 2)) / pairs
+        return result
+
     def re_constructor(self, target, dim, fun):
         with tf.name_scope("PHD_4_Reconstruction"):
             self.P['recon'] = tf.placeholder("float", [None, 1])
@@ -241,11 +271,12 @@ class FarSeer:
                 sess.run(init)
                 saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
-                    train_cost, _, summ, surv_pred = sess.run([cost, opti, merged, result], feed_dict=self.train_dict)
-                    vali_cost = sess.run(cost, feed_dict=self.vali_dict)
+                    train_cost, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, answer], feed_dict=self.train_dict)
+                    vali_cost, eval_pred, eval_real = sess.run([cost, result, answer], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
                         print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
-                        print(surv_pred)
+                        print("C-index for Training: ", self.yield_concordance(surv_pred, surv_real, 'train'))
+                        print("C-index for Evaluation: ", self.yield_concordance(eval_pred, eval_real, 'eval'))
                         learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
