@@ -203,6 +203,9 @@ class FarSeer:
                             x += 1
                     else:
                         x += 1
+            print(pairs)
+            print(epairs)
+            print(tied)
         result = (epairs + (tied / 2)) / pairs
         return result
 
