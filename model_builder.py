@@ -45,7 +45,7 @@ def run_model(pretrain):
         vector = tf.concat([mRNA, CNV, mut, cli], 1)
 
     with tf.name_scope("SPredictor"):
-        pro = maven.data_projector(vector, 619, 10000, 'relu')
-        pro2 = maven.data_projector(pro, 10000, 619, 'relu')
+        pro = maven.data_projector(vector, 619, 20000, 'relu')
+        pro2 = maven.data_projector(pro, 20000, 619, 'relu')
         pre = maven.surv_predictor(pro2, 619, 'relu')
-        maven.optimize_SPredictor(pre, maven.P['surviv'], 'adag', 10001, 1e-3)
+        maven.optimize_SPredictor(pre, maven.P['surviv'], 'adam', 10001, 1e-3)
