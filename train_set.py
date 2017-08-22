@@ -3,17 +3,17 @@ import pandas as pd
 import statistics as st
 
 class data_set:
-    def __init__(self, f, s, n1, n2):
-        self.file_name, self.file_name2, self.size_eval, self.size_test = f, s, n1, n1 + n2
+    def __init__(self, cancer_type):
+        self.type = cancer_type
 
     def data_extract(self):
-        df = pd.read_csv(self.file_name, '\t')
+        df = pd.read_csv(self.type + "_features.tsv", '\t')
         df.fillna(0, inplace=True)
         c, m, v, r = 0, 0, 0, 0
 
-        self.Z = np.array(df.values[:, :]).transpose()
+        self.A = np.array(df.values[:, :]).transpose()
 
-        for col in self.Z[0, :]:
+        for col in self.A[0, :]:
             if "_Clinical" in col:
                 c += 1
             elif "_Mut" in col:
@@ -33,9 +33,13 @@ class data_set:
                   'mRNA4': np.array(df.values[c + m + v + 12000:c + m + v + r, 1:]).transpose(),
                   'mRNA': np.array(df.values[c + m + v:c + m + v + r, 1:]).transpose()}
 
-        df = pd.read_csv(self.file_name2, '\t')
+        df = pd.read_csv(self.type + "_survival.tsv", '\t')
         raw_input = df.values[:, 1:]
         self.Y = np.array(raw_input).transpose()
+
+        df = pd.read_csv(self.type + "_censored.tsv", '\t')
+        raw_input = df.values[:, 1:]
+        self.Z = np.array(raw_input).transpose()
 
     def data_preprocess(self):
 
@@ -68,9 +72,12 @@ class data_set:
             if max - min != 0:
                 for j in range(self.X['mRNA'].shape[0]):
                     self.X['mRNA'][j, i] = (self.X['mRNA'][j, i] - min) / (max - min)
-                    
 
-        '''mean, stdv = st.mean(self.Y[:, 0]), st.stdev(self.Y[:, 0])
+        for i in range(self.Z.shape[0]):
+            self.Z[i, 0] = 1 - self.Z[i, 0]
+
+        '''
+        mean, stdv = st.mean(self.Y[:, 0]), st.stdev(self.Y[:, 0])
         for i in range(self.Y.shape[0]):
             self.Y[i, 0] = (self.Y[i, 0] - mean) / stdv
         '''

@@ -4,7 +4,7 @@ import tensorflow as tf
 
 
 def run_model(pretrain):
-    tr = ts.data_set('ACC_features.tsv', 'ACC_survival.tsv', 50, 80)
+    tr = ts.data_set("ACC")
     tr.data_extract()
     tr.data_preprocess()
     maven = cv.FarSeer(tr, 45, 30, 0.666)
