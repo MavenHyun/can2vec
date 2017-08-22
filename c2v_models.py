@@ -204,6 +204,7 @@ class FarSeer:
                     else:
                         x += 1
         result = (epairs + (tied / 2)) / pairs
+        tf.summary.histogram('C-index_' + type, result, ['main'])
         return result
 
     def re_constructor(self, target, dim, fun):
@@ -273,10 +274,10 @@ class FarSeer:
                 for iter in range(epochs):
                     train_cost, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, answer], feed_dict=self.train_dict)
                     vali_cost, eval_pred, eval_real = sess.run([cost, result, answer], feed_dict=self.vali_dict)
-                    print("C-index for Training: ", self.yield_concordance(surv_pred, surv_real, 'train'))
-                    print("C-index for Evaluation: ", self.yield_concordance(eval_pred, eval_real, 'eval'))
                     if iter % 100 == 0:
                         print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
+                        print("C-index for Training: ", self.yield_concordance(surv_pred, surv_real, 'train'))
+                        print("C-index for Evaluation: ", self.yield_concordance(eval_pred, eval_real, 'eval'))
                         learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
