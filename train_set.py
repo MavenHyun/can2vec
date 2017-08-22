@@ -73,9 +73,6 @@ class data_set:
                 for j in range(self.X['mRNA'].shape[0]):
                     self.X['mRNA'][j, i] = (self.X['mRNA'][j, i] - min) / (max - min)
 
-        for i in range(self.Z.shape[0]):
-            self.Z[i, 0] = 1 - self.Z[i, 0]
-
         '''
         mean, stdv = st.mean(self.Y[:, 0]), st.stdev(self.Y[:, 0])
         for i in range(self.Y.shape[0]):
