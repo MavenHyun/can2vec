@@ -199,11 +199,6 @@ class FarSeer:
                     else:
                         x += 1
         result = (epairs + (tied / 2)) / pairs
-        print("Number of orderings as expected", epairs)
-        print("Number of tied predictions", tied)
-        print("Number of comparison pairs", pairs)
-        print("predicted: ", pred.transpose())
-        print("answer: ", real.transpose())
         tf.summary.histogram('C-index_' + type, result, ['main'])
         return result
 
