@@ -189,6 +189,7 @@ class FarSeer:
                 if i == j or self.CS[type][i, 0] * self.CS[type][j, 0] == 1.0:
                     x += 1
                 else:
+                    pairs += 1
                     if pred[i, 0] > pred[j, 0] and real[i, 0] > real[j, 0]:
                         epairs += 1
                     elif pred[i, 0] < pred[j, 0] and real[i, 0] < real[j, 0]:
