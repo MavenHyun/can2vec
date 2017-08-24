@@ -276,6 +276,7 @@ class FarSeer:
                     vali_cost, eval_pred, eval_real = sess.run([cost, result, answer], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
                         print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
+                        print("Check: ", self.yield_concordance(surv_real, surv_real, 'check'))
                         print("C-index for Training: ", self.yield_concordance(surv_pred, surv_real, 'train'))
                         print("C-index for Evaluation: ", self.yield_concordance(eval_pred, eval_real, 'eval'))
                         learn = grey_magic(learn, train_cost, old_train)
