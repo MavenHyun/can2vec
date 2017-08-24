@@ -286,7 +286,7 @@ class FarSeer:
                 test_cost = sess.run(cost, feed_dict=self.test_dict)
                 print("Survivability Predictor Test Cost: ", test_cost, "Training Cost: ", train_cost,
                       "Evaluation Cost: ", vali_cost, "Final Learning Rate: ", learn)
-            saver.save(sess, "./saved/model_step2.ckpt")
+                saver.save(sess, "./saved/model_step2.ckpt")
 
     def optimize_RConstructor(self, result, answer, meth, epochs, learn):
         with tf.name_scope("Reconstruction_Optimizer"):
