@@ -186,7 +186,7 @@ class FarSeer:
         with tf.name_scope("Cox_Predictor"):
             out = []
             for x in range(target.shape[0]):
-                sum = 0.0
+                sum = 1.0
                 for y in range(target.shape[0]):
                     if x != y:
                         if time[y, 0] > time[x, 0]:
