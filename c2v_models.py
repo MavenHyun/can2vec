@@ -310,7 +310,7 @@ class FarSeer:
                     self.train_dict[self.P['cox']] = self.cox_partialsum(output, surv_time)
                     cost = -tf.reduce_sum(tf.subtract(output, self.P['cox']) * self.C['train'])
                     opti = white_magic(meth, learn, cost)
-                    _, summ, surv_pred, surv_real = sess.run([opti, merged, result, answer], feed_dict=self.train_dict)
+                    _, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, answer], feed_dict=self.train_dict)
                     eval_pred, eval_real = sess.run([result, answer], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
                         print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
