@@ -287,7 +287,6 @@ class FarSeer:
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
                         break
                     old_train = train_cost
-
                     train_writer.add_summary(summ, iter)
                 test_cost, test_pred, test_real = sess.run([cost, result, answer], feed_dict=self.test_dict)
                 print("Survivability Predictor Test Cost: ", test_cost, "Training Cost: ", train_cost,
