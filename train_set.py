@@ -27,19 +27,15 @@ class data_set:
                   'cli': np.array(df.values[:c, 1:]).transpose(),
                   'mut': np.array(df.values[c:c + m, 1:]).transpose(),
                   'CNV': np.array(df.values[c + m:c + m + v, 1:]).transpose(),
-                  'mRNA1': np.array(df.values[c + m + v:c + m + v + 4000, 1:]).transpose(),
-                  'mRNA2': np.array(df.values[c + m + v + 4000:c + m + v + 8000, 1:]).transpose(),
-                  'mRNA3': np.array(df.values[c + m + v + 8000:c + m + v + 12000, 1:]).transpose(),
-                  'mRNA4': np.array(df.values[c + m + v + 12000:c + m + v + r, 1:]).transpose(),
                   'mRNA': np.array(df.values[c + m + v:c + m + v + r, 1:]).transpose()}
 
         df = pd.read_csv(self.type + "_survival.tsv", '\t')
         raw_input = df.values[:, 1:]
-        self.Y = np.array(raw_input).transpose()
+        self.X['sur'] = np.array(raw_input).transpose()
 
         df = pd.read_csv(self.type + "_censored.tsv", '\t')
         raw_input = df.values[:, 1:]
-        self.Z = np.array(raw_input).transpose()
+        self.X['cen'] = np.array(raw_input).transpose()
 
     def data_preprocess(self):
 
@@ -73,8 +69,8 @@ class data_set:
                 for j in range(self.X['mRNA'].shape[0]):
                     self.X['mRNA'][j, i] = (self.X['mRNA'][j, i] - min) / (max - min)
 
-        for i in range(self.Z.shape[0]):
-            self.Z[i, 0] = 1 - self.Z[i, 0]
+        for i in range(self.X['cen'].shape[0]):
+            self.X['cen'][i, 0] = 1 - self.X['cen'][i, 0]
 
         '''
         mean, stdv = st.mean(self.Y[:, 0]), st.stdev(self.Y[:, 0])
