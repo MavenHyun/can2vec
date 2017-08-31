@@ -38,31 +38,6 @@ class data_set:
         self.X['cen'] = np.array(raw_input).transpose()
 
     def data_preprocess(self):
-
-        for i in range(self.X['mRNA1'].shape[1]):
-            min, max = np.min(self.X['mRNA1'][:, i]), np.max(self.X['mRNA1'][:, i])
-            if max - min != 0:
-                for j in range(self.X['mRNA1'].shape[0]):
-                    self.X['mRNA1'][j, i] = (self.X['mRNA1'][j, i] - min) / (max - min)
-        
-        for i in range(self.X['mRNA2'].shape[1]):
-            min, max = np.min(self.X['mRNA2'][:, i]), np.max(self.X['mRNA2'][:, i])
-            if max - min != 0:
-                for j in range(self.X['mRNA2'].shape[0]):
-                    self.X['mRNA2'][j, i] = (self.X['mRNA2'][j, i] - min) / (max - min)
-                    
-        for i in range(self.X['mRNA3'].shape[1]):
-            min, max = np.min(self.X['mRNA3'][:, i]), np.max(self.X['mRNA3'][:, i])
-            if max - min != 0:
-                for j in range(self.X['mRNA3'].shape[0]):
-                    self.X['mRNA3'][j, i] = (self.X['mRNA3'][j, i] - min) / (max - min)
-                    
-        for i in range(self.X['mRNA4'].shape[1]):
-            min, max = np.min(self.X['mRNA4'][:, i]), np.max(self.X['mRNA4'][:, i])
-            if max - min != 0:
-                for j in range(self.X['mRNA4'].shape[0]):
-                    self.X['mRNA4'][j, i] = (self.X['mRNA4'][j, i] - min) / (max - min)
-        
         for i in range(self.X['mRNA'].shape[1]):
             min, max = np.min(self.X['mRNA'][:, i]), np.max(self.X['mRNA'][:, i])
             if max - min != 0:

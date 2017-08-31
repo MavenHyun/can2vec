@@ -2,7 +2,6 @@ import train_set as ts
 import c2v_models as cv
 import tensorflow as tf
 
-
 def run_model(pretrain):
     tr = ts.data_set("ACC")
     tr.data_extract()
@@ -47,5 +46,5 @@ def run_model(pretrain):
     with tf.name_scope("SPredictor"):
         pro = maven.data_projector(vector, 619, 20000, 'relu')
         pro2 = maven.data_projector(pro, 20000, 619, 'relu')
-        pre = maven.surv_predictor(pro2, 619, 'relu')
-        maven.optimize_SPredictor(pre, maven.P['surviv'], 'adam', 10001, 1e-3)
+        pre = maven.surv_predictor(pro2, 619, 'relu', True)
+        maven.optimize_CPredictor(pre, maven.P['sur'], 'adam', 10001, 1e-3)

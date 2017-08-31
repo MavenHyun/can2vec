@@ -1,9 +1,6 @@
 import tensorflow as tf
 import numpy as np
 from datetime import datetime
-from lifelines.utils import _naive_concordance_index
-import time
-import train_set as ts
 
 #   Select your spell for activation function.
 def black_magic(operation, name):
