@@ -3,9 +3,10 @@ import c2v_models as cv
 import tensorflow as tf
 
 def run_model(pretrain):
-    tr = ts.data_set("ACC")
+    tr = ts.data_set("ACC", 45, 30)
     tr.data_extract()
     tr.data_preprocess()
+    tr.data_split()
     maven = cv.FarSeer(tr, 45, 30, 0.666)
 
     with tf.name_scope("Cli_AEncoder"):
