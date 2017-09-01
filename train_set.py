@@ -3,8 +3,11 @@ import pandas as pd
 import statistics as st
 
 class data_set:
-    def __init__(self, cancer_type):
+    def __init__(self, cancer_type, num_train, num_valid):
         self.type = cancer_type
+        self.train = num_train
+        self.valid = num_valid
+        self.samples = 0
 
     def data_extract(self):
         df = pd.read_csv(self.type + "_features.tsv", '\t')
@@ -28,7 +31,8 @@ class data_set:
                   'mut': np.array(df.values[c:c + m, 1:]).transpose(),
                   'CNV': np.array(df.values[c + m:c + m + v, 1:]).transpose(),
                   'mRNA': np.array(df.values[c + m + v:c + m + v + r, 1:]).transpose()}
-
+        self.samples = self.X['all'].shape[0]
+        
         df = pd.read_csv(self.type + "_survival.tsv", '\t')
         raw_input = df.values[:, 1:]
         self.X['sur'] = np.array(raw_input).transpose()
@@ -52,6 +56,18 @@ class data_set:
         for i in range(self.Y.shape[0]):
             self.Y[i, 0] = (self.Y[i, 0] - mean) / stdv
         '''
-        
 
-
+    def data_split(self):
+        all = np.split(self.X['all'], [self.train, self.valid, self.samples], axis=0)
+        cli = np.split(self.X['cli'], [self.train, self.valid, self.samples], axis=0)
+        mut = np.split(self.X['mut'], [self.train, self.valid, self.samples], axis=0)
+        cnv = np.split(self.X['CNV'], [self.train, self.valid, self.samples], axis=0)
+        mrna = np.split(self.X['mRNA'], [self.train, self.valid, self.samples], axis=0)
+        sur = np.split(self.X['sur'], [self.train, self.valid, self.samples], axis=0)
+        cen = np.split(self.X['sur'], [self.train, self.valid, self.samples], axis=0)
+        self.T = {'all': all[0], 'cli': cli[0], 'mut': mut[0], 'cnv': cnv[0],
+                  'mRNA': mrna[0], 'sur': sur[0], 'cen': cen[0]}
+        self.V = {'all': all[1], 'cli': cli[1], 'mut': mut[1], 'cnv': cnv[1],
+                  'mRNA': mrna[1], 'sur': sur[1], 'cen': cen[1]}
+        self.S = {'all': all[2], 'cli': cli[2], 'mut': mut[2], 'cnv': cnv[2],
+                  'mRNA': mrna[2], 'sur': sur[2], 'cen': cen[2]}
