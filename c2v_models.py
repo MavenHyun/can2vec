@@ -167,9 +167,7 @@ class FarSeer:
             self.P['sur'] = tf.placeholder("float", [self.data.T['sur'].shape[0], 1])
             self.P['sur_C'] = tf.placeholder("float", [self.data.T['sur'].shape[0], 1])
             self.train_dict[self.P['sur_C']] = self.data.T['sur']
-            self.train_dict[self.P['sur_T']] = self.data.T['sur']
-            self.vali_dict[self.P['sur_V']] = self.data.V['sur']
-            self.test_dict[self.P['sur_S']] = self.data.S['sur']
+            self.train_dict[self.P['sur']] = self.data.T['sur']
 
         with tf.name_scope("Survivability_Predictor"):
             self.W['sur'] = tf.get_variable("W_sur", shape=[dim, 1],
