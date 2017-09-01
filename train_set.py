@@ -65,9 +65,9 @@ class data_set:
         mrna = np.split(self.X['mRNA'], [self.train, self.valid, self.samples], axis=0)
         sur = np.split(self.X['sur'], [self.train, self.valid, self.samples], axis=0)
         cen = np.split(self.X['sur'], [self.train, self.valid, self.samples], axis=0)
-        self.T = {'all': all[0], 'cli': cli[0], 'mut': mut[0], 'cnv': cnv[0],
+        self.T = {'all': all[0], 'cli': cli[0], 'mut': mut[0], 'CNV': cnv[0],
                   'mRNA': mrna[0], 'sur': sur[0], 'cen': cen[0]}
-        self.V = {'all': all[1], 'cli': cli[1], 'mut': mut[1], 'cnv': cnv[1],
+        self.V = {'all': all[1], 'cli': cli[1], 'mut': mut[1], 'CNV': cnv[1],
                   'mRNA': mrna[1], 'sur': sur[1], 'cen': cen[1]}
-        self.S = {'all': all[2], 'cli': cli[2], 'mut': mut[2], 'cnv': cnv[2],
+        self.S = {'all': all[2], 'cli': cli[2], 'mut': mut[2], 'CNV': cnv[2],
                   'mRNA': mrna[2], 'sur': sur[2], 'cen': cen[2]}
