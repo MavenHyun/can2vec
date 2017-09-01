@@ -164,8 +164,8 @@ class FarSeer:
     
     def surv_predictor(self, target, dim, fun):
         with tf.name_scope("PHD_4_Prediction"):
-            self.P['sur'] = tf.placeholder("float", [self.data.T['sur'].shape[0], 1])
-            self.P['sur_C'] = tf.placeholder("float", [self.data.T['sur'].shape[0], 1])
+            self.P['sur'] = tf.placeholder("float", [None, 1])
+            self.P['sur_C'] = tf.placeholder("float", [None, 1])
             self.train_dict[self.P['sur_C']] = self.data.T['sur']
             self.train_dict[self.P['sur']] = self.data.T['sur']
             self.vali_dict[self.P['sur']] = self.data.V['sur']
