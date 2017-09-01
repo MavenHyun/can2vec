@@ -168,6 +168,8 @@ class FarSeer:
             self.P['sur_C'] = tf.placeholder("float", [self.data.T['sur'].shape[0], 1])
             self.train_dict[self.P['sur_C']] = self.data.T['sur']
             self.train_dict[self.P['sur']] = self.data.T['sur']
+            self.vali_dict[self.P['sur']] = self.data.V['sur']
+            self.test_dict[self.P['sur']] = self.data.S['sur']
 
         with tf.name_scope("Survivability_Predictor"):
             self.W['sur'] = tf.get_variable("W_sur", shape=[dim, 1],
@@ -326,14 +328,14 @@ class FarSeer:
                     partial_sum = self.cox_partialsum(surv_epsi, surv_time)
                     cost = -tf.reduce_sum(tf.subtract(result, partial_sum) * self.C['train'])
                     opti = white_magic(meth, learn, cost)
-                    c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.data.T['surv']], feed_dict=self.train_dict)
+                    c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']], feed_dict=self.train_dict)
                     print(c)
-                    valid_pred, valid_real = sess.run([result, self.V['surv']], feed_dict=self.vali_dict)
+                    valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
                         print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
                         print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
                     train_writer.add_summary(summ, iter)
-                test_pred, test_real = sess.run([result, self.S['surv']], feed_dict=self.test_dict)
+                test_pred, test_real = sess.run([result, self.P['sur']], feed_dict=self.test_dict)
                 print("C-Index for test session", self.estat_cindex(test_pred, test_real, 'test'))
                 saver.save(sess, "./saved/model_step2.ckpt")
 
