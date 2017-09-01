@@ -326,7 +326,7 @@ class FarSeer:
                     partial_sum = self.cox_partialsum(surv_epsi, surv_time)
                     cost = -tf.reduce_sum(tf.subtract(result, partial_sum) * self.C['train'])
                     opti = white_magic(meth, learn, cost)
-                    c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.T['surv']], feed_dict=self.train_dict)
+                    c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.data.T['surv']], feed_dict=self.train_dict)
                     print(c)
                     valid_pred, valid_real = sess.run([result, self.V['surv']], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
