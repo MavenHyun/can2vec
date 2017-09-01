@@ -51,7 +51,7 @@ class FarSeer:
     def __init__(self, dataset, num1, num2, drop):
         with tf.name_scope("Basic_Settings"):
             # Needs revamp!
-            self.X, self.N = dataset.X, dataset.X['all'].shape[0]
+            self.data, self.X, self.N = dataset, dataset.X, dataset.X['all'].shape[0]
             self.P, self.W, self.B = {}, {}, {}
             # For feeding dicts and saving variables
             self.train_dict, self.vali_dict, self.test_dict, self.var_dict = {}, {}, {}, {}
@@ -65,7 +65,7 @@ class FarSeer:
             # For splitting censored data-set
             self.C = {}
             self.C['train'] = np.split(self.X['cen'], [self.size_train, self.size_test, self.N], axis=0)[0]
-            self.C['eval'] = np.split(self.X['cen'], [self.size_train, self.size_test, self.N], axis=0)[1]
+            self.C['valid'] = np.split(self.X['cen'], [self.size_train, self.size_test, self.N], axis=0)[1]
             self.C['test'] = np.split(self.X['cen'], [self.size_train, self.size_test, self.N], axis=0)[2]
             # Dropout!
             self.drop = drop
@@ -73,9 +73,9 @@ class FarSeer:
     def not_encoder(self, fea):
         with tf.name_scope("PHD_4_" + fea + "_Training"):
             self.P[fea] = tf.placeholder("float", [None, None])
-            self.train_dict[self.P[fea]] = np.split(self.X[fea], [self.size_train, self.size_test, self.N], axis=0)[0]
-            self.vali_dict[self.P[fea]] = np.split(self.X[fea], [self.size_train, self.size_test, self.N], axis=0)[1]
-            self.test_dict[self.P[fea]] = np.split(self.X[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
+            self.train_dict[self.P[fea]] = self.data.T[fea]
+            self.vali_dict[self.P[fea]] = self.data.V[fea]
+            self.test_dict[self.P[fea]] = self.data.S[fea]
             result = self.P[fea]
         return result
 
@@ -84,9 +84,9 @@ class FarSeer:
         self.dec_stack[fea] = 0
         with tf.name_scope("PHD_4_" + fea + "_Training"):
             self.P[fea] = tf.placeholder("float", [None, None])
-            self.train_dict[self.P[fea]] = np.split(self.X[fea], [self.size_train, self.size_test, self.N], axis=0)[0]
-            self.vali_dict[self.P[fea]] = np.split(self.X[fea], [self.size_train, self.size_test, self.N], axis=0)[1]
-            self.test_dict[self.P[fea]] = np.split(self.X[fea], [self.size_train, self.size_test, self.N], axis=0)[2]
+            self.train_dict[self.P[fea]] = self.data.T[fea]
+            self.vali_dict[self.P[fea]] = self.data.V[fea]
+            self.test_dict[self.P[fea]] = self.data.S[fea]
 
         with tf.name_scope(fea + "_Encoder"):
             name = fea + '_encT'
@@ -162,12 +162,14 @@ class FarSeer:
                                                self.B[name]), fun), self.drop)
         return result
     
-    def surv_predictor(self, target, dim, fun, cox):
+    def surv_predictor(self, target, dim, fun, set):
         with tf.name_scope("PHD_4_Prediction"):
-            self.P['sur'] = tf.placeholder("float", [None, 1])
-            self.train_dict[self.P['sur']] = np.split(self.X['sur'], [self.size_train, self.size_test, self.N], axis=0)[0]
-            self.vali_dict[self.P['sur']] = np.split(self.X['sur'], [self.size_train, self.size_test, self.N], axis=0)[1]
-            self.test_dict[self.P['sur']] = np.split(self.X['sur'], [self.size_train, self.size_test, self.N], axis=0)[2]
+            self.P['sur'] = tf.placeholder("float", [self.data.T['sur'].shape[0], 1])
+            self.P['sur_C'] = tf.placeholder("float", [self.data.T['sur'].shape[0], 1])
+            self.train_dict[self.P['sur_C']] = self.data.T['sur']
+            self.train_dict[self.P['sur_T']] = self.data.T['sur']
+            self.vali_dict[self.P['sur_V']] = self.data.V['sur']
+            self.test_dict[self.P['sur_S']] = self.data.S['sur']
 
         with tf.name_scope("Survivability_Predictor"):
             self.W['sur'] = tf.get_variable("W_sur", shape=[dim, 1],
@@ -177,9 +179,6 @@ class FarSeer:
                                                initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_sur', self.B['sur'], ['main'])
             result = black_magic(tf.add(tf.matmul(target, self.W['sur']), self.B['sur']), fun)
-            if cox is True:
-                self.P['cox'] = tf.placeholder("float", [45, 1])
-                result = tf.exp(result)
             return result
 
     def cox_cummulative(self, target, time):
@@ -191,7 +190,7 @@ class FarSeer:
             y, sum = 0, 1.0
             for val_y in values:
                 if x != y:
-                    if time[y, 0] > time[x, 0]:
+                    if time[y][0] > time[x][0]:
                         sum += val_y
                 y += 1
             out.append(sum)
@@ -210,6 +209,7 @@ class FarSeer:
                             sum += target[y, 0]
                 out.append([sum])
             result = np.log(np.array(out))
+        print(result)
         return result
 
     def estat_cindex(self, pred, real, type):
@@ -235,9 +235,9 @@ class FarSeer:
     def re_constructor(self, target, dim, fun):
         with tf.name_scope("PHD_4_Reconstruction"):
             self.P['recon'] = tf.placeholder("float", [None, 1])
-            self.train_dict[self.P['recon']] = np.split(self.X['sur'], [self.size_train, self.size_test, self.N], axis=0)[0]
-            self.vali_dict[self.P['recon']] = np.split(self.X['sur'], [self.size_train, self.size_test, self.N], axis=0)[1]
-            self.test_dict[self.P['recon']] = np.split(self.X['sur'], [self.size_train, self.size_test, self.N], axis=0)[2]
+            self.train_dict[self.P['recon']] = self.T['all']
+            self.vali_dict[self.P['recon']] = self.V['all']
+            self.test_dict[self.P['recon']] = self.S['all']
 
         with tf.name_scope("Data_Reconstructor"):
             self.W['recon'] = tf.get_variable("W_recon", shape=[dim, self.N],
@@ -269,19 +269,19 @@ class FarSeer:
                 old_train, old_vali = 0, 0
                 for iter in range(opt.epochs):
                     train_cost, _, summ = sess.run([opt.cost, opt.opti, merged], feed_dict=self.train_dict)
-                    vali_cost = sess.run(opt.cost, feed_dict=self.vali_dict)
+                    valid_cost = sess.run(opt.cost, feed_dict=self.vali_dict)
                     opt.learn = grey_magic(opt.learn, train_cost, old_train)
-                    if red_magic(opt.learn, old_train, train_cost, old_vali, vali_cost, iter, opt.epochs) is True:
+                    if red_magic(opt.learn, old_train, train_cost, old_vali, valid_cost, iter, opt.epochs) is True:
                         break
                     tw.add_summary(summ, iter)
                     old_train = train_cost
                 test_cost = sess.run(opt.cost, feed_dict=self.test_dict)
                 print("Feature: ", opt.fea, "Test Cost: ", test_cost, "Training Cost: ", train_cost, "Evaluation Cost: "
-                      , vali_cost, "Final Learning Rate: ", opt.learn)
+                      , valid_cost, "Final Learning Rate: ", opt.learn)
 
-    def optimize_SPredictor(self, result, answer, meth, epochs, learn):
+    def optimize_SPredictor(self, result, meth, epochs, learn):
         with tf.name_scope("Train_SPredictor"):
-            cost = tf.reduce_mean(tf.pow(result - answer, 2))
+            cost = tf.reduce_mean(tf.pow(result - self.P['sur'], 2))
             opti = white_magic(meth, learn, cost)
             tf.summary.scalar('cost_survivability', cost, collections=['main'])
             merged = tf.summary.merge_all('main')
@@ -295,23 +295,24 @@ class FarSeer:
                 sess.run(init)
                 saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
-                    train_cost, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, answer], feed_dict=self.train_dict)
-                    vali_cost, eval_pred, eval_real = sess.run([cost, result, answer], feed_dict=self.vali_dict)
+                    train_cost, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
+                                                                         feed_dict=self.train_dict)
+                    valid_cost, valid_pred, valid_real = sess.run([cost, result, self.P['sur']], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
                         print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
-                        print("C-Index for validation session", self.estat_cindex(eval_pred, eval_real, 'eval'))
+                        print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
                     learn = grey_magic(learn, train_cost, old_train)
-                    if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
+                    if red_magic(learn, old_train, train_cost, old_vali, valid_cost, iter, epochs) is True:
                         break
                     old_train = train_cost
                     train_writer.add_summary(summ, iter)
-                test_cost, test_pred, test_real = sess.run([cost, result, answer], feed_dict=self.test_dict)
+                test_cost, test_pred, test_real = sess.run([cost, result, self.P['sur']], feed_dict=self.test_dict)
                 print("Survivability Predictor Test Cost: ", test_cost, "Training Cost: ", train_cost,
-                      "Evaluation Cost: ", vali_cost, "C-Index for test session: ",
+                      "Evaluation Cost: ", valid_cost, "C-Index for test session: ",
                       self.estat_cindex(test_pred, test_real, 'test'), "Final Learning Rate: ", learn)
                 saver.save(sess, "./saved/model_step2.ckpt")
 
-    def optimize_CPredictor(self, result, answer, meth, epochs, learn):
+    def optimize_CPredictor(self, result, meth, epochs, learn):
         with tf.name_scope("Train_CPredictor"):
             merged = tf.summary.merge_all('main')
             config = tf.ConfigProto()
@@ -323,17 +324,18 @@ class FarSeer:
                 sess.run(init)
                 saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
-                    surv_time = sess.run([answer], feed_dict=self.train_dict)
-                    partial_sum = self.cox_cummulative(result, surv_time)
+                    surv_time, surv_epsi = sess.run([self.P['sur'], result], feed_dict=self.train_dict)
+                    partial_sum = self.cox_partialsum(surv_epsi, surv_time)
                     cost = -tf.reduce_sum(tf.subtract(result, partial_sum) * self.C['train'])
                     opti = white_magic(meth, learn, cost)
-                    _, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, answer], feed_dict=self.train_dict)
-                    eval_pred, eval_real = sess.run([result, answer], feed_dict=self.vali_dict)
+                    c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.T['surv']], feed_dict=self.train_dict)
+                    print(c)
+                    valid_pred, valid_real = sess.run([result, self.V['surv']], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
                         print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
-                        print("C-Index for validation session", self.estat_cindex(eval_pred, eval_real, 'eval'))
+                        print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
                     train_writer.add_summary(summ, iter)
-                test_pred, test_real = sess.run([result, answer], feed_dict=self.test_dict)
+                test_pred, test_real = sess.run([result, self.S['surv']], feed_dict=self.test_dict)
                 print("C-Index for test session", self.estat_cindex(test_pred, test_real, 'test'))
                 saver.save(sess, "./saved/model_step2.ckpt")
 
@@ -372,3 +374,4 @@ class SplitOptimizer:
             self.fea, self.result, self.meth, self.epochs, self.learn = fea, result, meth, epochs, learn
             self.cost = tf.reduce_mean(tf.pow(result - answer, 2))
             self.opti = white_magic(meth, learn, self.cost)
+
