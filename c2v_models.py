@@ -178,9 +178,26 @@ class FarSeer:
             tf.summary.histogram('B_sur', self.B['sur'], ['main'])
             result = black_magic(tf.add(tf.matmul(target, self.W['sur']), self.B['sur']), fun)
             if cox is True:
-                self.P['cox'] = tf.placeholder("float", [None, 1])
+                self.P['cox'] = tf.placeholder("float", [45, 1])
                 result = tf.exp(result)
             return result
+
+    def cox_cummulative(self, target, time):
+        target = tf.exp(target)
+        values = tf.split(target, target.get_shape()[0], 0)
+        out = []
+        x = 0
+        for val_x in values:
+            y, sum = 0, 1.0
+            for val_y in values:
+                if x != y:
+                    if time[y, 0] > time[x, 0]:
+                        sum += val_y
+                y += 1
+            out.append(sum)
+            x += 1
+        result = tf.concat(out, 1)
+        return result
 
     def cox_partialsum(self, target, time):
         with tf.name_scope("Cox_Predictor"):
@@ -191,8 +208,8 @@ class FarSeer:
                     if x != y:
                         if time[y, 0] > time[x, 0]:
                             sum += target[y, 0]
-                out.append(sum)
-            result = np.log(np.transpose(np.array(out)))
+                out.append([sum])
+            result = np.log(np.array(out))
         return result
 
     def estat_cindex(self, pred, real, type):
@@ -306,9 +323,9 @@ class FarSeer:
                 sess.run(init)
                 saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
-                    output, surv_time = sess.run([result, answer], feed_dict=self.train_dict)
-                    self.train_dict[self.P['cox']] = self.cox_partialsum(output, surv_time)
-                    cost = -tf.reduce_sum(tf.subtract(output, self.P['cox']) * self.C['train'])
+                    surv_time = sess.run([answer], feed_dict=self.train_dict)
+                    partial_sum = self.cox_cummulative(result, surv_time)
+                    cost = -tf.reduce_sum(tf.subtract(result, partial_sum) * self.C['train'])
                     opti = white_magic(meth, learn, cost)
                     _, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, answer], feed_dict=self.train_dict)
                     eval_pred, eval_real = sess.run([result, answer], feed_dict=self.vali_dict)
@@ -355,4 +372,3 @@ class SplitOptimizer:
             self.fea, self.result, self.meth, self.epochs, self.learn = fea, result, meth, epochs, learn
             self.cost = tf.reduce_mean(tf.pow(result - answer, 2))
             self.opti = white_magic(meth, learn, self.cost)
-
