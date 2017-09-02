@@ -165,8 +165,6 @@ class FarSeer:
     def surv_predictor(self, target, dim, fun):
         with tf.name_scope("PHD_4_Prediction"):
             self.P['sur'] = tf.placeholder("float", [None, 1])
-            self.P['sur_C'] = tf.placeholder("float", [None, 1])
-            self.train_dict[self.P['sur_C']] = self.data.T['sur']
             self.train_dict[self.P['sur']] = self.data.T['sur']
             self.vali_dict[self.P['sur']] = self.data.V['sur']
             self.test_dict[self.P['sur']] = self.data.S['sur']
@@ -183,33 +181,21 @@ class FarSeer:
 
     def cox_cummulative(self, target, time):
         target = tf.exp(target)
+        target = tf.slice(target, [0, 0], [self.data.T['sur'].shape[0], -1])
         values = tf.split(target, target.get_shape()[0], 0)
         out = []
         x = 0
         for val_x in values:
-            y, sum = 0, 1.0
+            y = 0
+            sum = tf.zeros_like(val_x)
             for val_y in values:
                 if x != y:
                     if time[y][0] > time[x][0]:
-                        sum += val_y
+                        sum = tf.add(sum, val_y)
                 y += 1
             out.append(sum)
             x += 1
         result = tf.concat(out, 1)
-        return result
-
-    def cox_partialsum(self, target, time):
-        with tf.name_scope("Cox_Predictor"):
-            out = []
-            for x in range(target.shape[0]):
-                sum = 1.0
-                for y in range(target.shape[0]):
-                    if x != y:
-                        if time[y, 0] > time[x, 0]:
-                            sum += target[y, 0]
-                out.append([sum])
-            result = np.log(np.array(out))
-        print(result)
         return result
 
     def estat_cindex(self, pred, real, type):
@@ -324,11 +310,12 @@ class FarSeer:
                 sess.run(init)
                 saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
-                    surv_time, surv_epsi = sess.run([self.P['sur'], result], feed_dict=self.train_dict)
-                    partial_sum = self.cox_partialsum(surv_epsi, surv_time)
+                    surv_time = sess.run([self.P['sur']], feed_dict=self.train_dict)
+                    partial_sum = self.cox_cummulative(result, surv_time)
                     cost = -tf.reduce_sum(tf.subtract(result, partial_sum) * self.C['train'])
                     opti = white_magic(meth, learn, cost)
-                    c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']], feed_dict=self.train_dict)
+                    c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
+                                                                feed_dict=self.train_dict)
                     print(c)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
