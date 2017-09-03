@@ -71,4 +71,3 @@ class data_set:
                   'mRNA': mrna[1], 'sur': sur[1], 'cen': cen[1]}
         self.S = {'all': all[2], 'cli': cli[2], 'mut': mut[2], 'CNV': cnv[2],
                   'mRNA': mrna[2], 'sur': sur[2], 'cen': cen[2]}
-        print("Test: ", self.V['sur'])

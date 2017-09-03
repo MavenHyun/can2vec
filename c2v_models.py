@@ -185,7 +185,6 @@ class FarSeer:
         values = tf.split(target, target.get_shape()[0], 0)
         out = []
         x = 0
-        print(time)
         for val_x in values:
             y = 0
             sum = tf.zeros_like(val_x)
@@ -200,8 +199,6 @@ class FarSeer:
         return result
 
     def estat_cindex(self, pred, real, type):
-        print(pred)
-        print(real)
         samples = pred.shape[0]
         pairs, epairs, tied, x = 0, 0, 0, 0
         for i in range(samples):
@@ -321,6 +318,8 @@ class FarSeer:
                                                                 feed_dict=self.train_dict)
                     print(c)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
+                    print(valid_pred)
+                    print(valid_real)
                     if iter % 100 == 0:
                         print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
                         print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
