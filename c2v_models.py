@@ -168,7 +168,6 @@ class FarSeer:
             self.train_dict[self.P['sur']] = self.data.T['sur']
             self.vali_dict[self.P['sur']] = self.data.V['sur']
             self.test_dict[self.P['sur']] = self.data.S['sur']
-            print(self.data.V['sur'])
 
         with tf.name_scope("Survivability_Predictor"):
             self.W['sur'] = tf.get_variable("W_sur", shape=[dim, 1],
