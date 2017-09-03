@@ -7,7 +7,7 @@ def run_model(pretrain):
     tr.data_extract()
     tr.data_preprocess()
     tr.data_split()
-    maven = cv.FarSeer(tr, 45, 30, 0.666)
+    maven = cv.FarSeer(tr, 0.666)
 
     with tf.name_scope("Cli_AEncoder"):
         cli = maven.not_encoder('cli')

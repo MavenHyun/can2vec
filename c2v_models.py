@@ -48,7 +48,7 @@ def red_magic(learn, old_train, new_train, old_vali, new_vali, iter, epochs):
 # Still needs improvement!
 class FarSeer:
     # vali = 50, test = 30
-    def __init__(self, dataset, num1, num2, drop):
+    def __init__(self, dataset, drop):
         with tf.name_scope("Basic_Settings"):
             # Needs revamp!
             self.data, self.X, self.N = dataset, dataset.X, dataset.X['all'].shape[0]
@@ -56,7 +56,6 @@ class FarSeer:
             # For feeding dicts and saving variables
             self.train_dict, self.vali_dict, self.test_dict, self.var_dict = {}, {}, {}, {}
             # Train, Eval and Test
-            self.size_train, self.size_test = num1, num1 + num2
             # For stacked encoders and projectors
             self.enc_stack, self.dec_stack = {}, {}
             self.pro_stack, self.cox_stack = 0, 0
@@ -304,7 +303,9 @@ class FarSeer:
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
+                print("TEST", self.data.T['sur'])
                 print("TEST", self.data.V['sur'])
+                print("TEST", self.data.S['sur'])
                 init = tf.global_variables_initializer()
                 saver = tf.train.Saver(self.var_dict)
                 train_writer = tf.summary.FileWriter("./PHASE2/" + str(datetime.now()), sess.graph,)
