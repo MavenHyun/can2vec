@@ -191,7 +191,7 @@ class FarSeer:
             sum = tf.zeros_like(val_x)
             for val_y in values:
                 if x != y:
-                    if time[y][0] > time[x][0]:
+                    if time[0][y] > time[0][x]:
                         sum = tf.add(sum, val_y)
                 y += 1
             out.append(sum)
