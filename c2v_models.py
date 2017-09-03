@@ -300,6 +300,7 @@ class FarSeer:
 
     def optimize_CPredictor(self, result, meth, epochs, learn):
         with tf.name_scope("Train_CPredictor"):
+            print(self.data.V['sur'])
             merged = tf.summary.merge_all('main')
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
