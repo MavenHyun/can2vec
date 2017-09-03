@@ -303,9 +303,6 @@ class FarSeer:
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             with tf.Session(config=config) as sess:
-                print("TEST", self.data.T['sur'])
-                print("TEST", self.data.V['sur'])
-                print("TEST", self.data.S['sur'])
                 init = tf.global_variables_initializer()
                 saver = tf.train.Saver(self.var_dict)
                 train_writer = tf.summary.FileWriter("./PHASE2/" + str(datetime.now()), sess.graph,)
