@@ -200,6 +200,8 @@ class FarSeer:
         return result
 
     def estat_cindex(self, pred, real, type):
+        print(pred)
+        print(real)
         samples = pred.shape[0]
         pairs, epairs, tied, x = 0, 0, 0, 0
         for i in range(samples):
