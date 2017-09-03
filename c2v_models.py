@@ -318,10 +318,8 @@ class FarSeer:
                     opti = white_magic(meth, learn, cost)
                     c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
                                                                 feed_dict=self.train_dict)
-                    print(c)
+                    print("Likelihood function value: ", c)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
-                    print(valid_pred)
-                    print(valid_real)
                     if iter % 100 == 0:
                         print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
                         print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))

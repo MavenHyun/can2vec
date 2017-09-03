@@ -6,7 +6,7 @@ class data_set:
     def __init__(self, cancer_type, num_train, num_valid):
         self.type = cancer_type
         self.train = num_train
-        self.valid = num_valid
+        self.valid = num_valid + num_train
         self.samples = 0
 
     def data_extract(self):
