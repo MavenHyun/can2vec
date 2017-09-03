@@ -64,9 +64,9 @@ class FarSeer:
             self.item_list = []
             # For splitting censored data-set
             self.C = {}
-            self.C['train'] = np.split(self.X['cen'], [self.size_train, self.size_test, self.N], axis=0)[0]
-            self.C['valid'] = np.split(self.X['cen'], [self.size_train, self.size_test, self.N], axis=0)[1]
-            self.C['test'] = np.split(self.X['cen'], [self.size_train, self.size_test, self.N], axis=0)[2]
+            self.C['train'] = self.data.T['cen']
+            self.C['valid'] = self.data.V['cen']
+            self.C['test'] = self.data.S['cen']
             # Dropout!
             self.drop = drop
 
@@ -185,6 +185,7 @@ class FarSeer:
         values = tf.split(target, target.get_shape()[0], 0)
         out = []
         x = 0
+        print(time)
         for val_x in values:
             y = 0
             sum = tf.zeros_like(val_x)
