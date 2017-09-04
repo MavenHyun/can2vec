@@ -202,7 +202,7 @@ class FarSeer:
         pairs, epairs, tied, x = 0, 0, 0, 0
         for i in range(samples):
             for j in range(samples):
-                if i == j or self.C[type][i, 0] + self.C[type][j, 0] != 0.0:
+                if i == j or self.C[type][i, 0] + self.C[type][j, 0] == 0.0:
                     x += 1
                 else:
                     pairs += 1
@@ -311,7 +311,7 @@ class FarSeer:
                 for iter in range(epochs):
                     surv_time = sess.run([self.P['sur']], feed_dict=self.train_dict)
                     partial_sum = self.cox_cummulative(result, surv_time)
-                    cost = -(tf.reduce_sum(tf.subtract(result, partial_sum) * self.C['train']))
+                    cost = -(tf.reduce_sum(tf.exp(tf.subtract(result, partial_sum) * self.C['train'])))
                     opti = white_magic(meth, learn, cost)
                     c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
                                                                 feed_dict=self.train_dict)
