@@ -225,10 +225,10 @@ class FarSeer:
             self.test_dict[self.P['recon']] = self.data.S['all']
 
         with tf.name_scope("Data_Reconstructor"):
-            self.W['recon'] = tf.get_variable("W_recon", shape=[dim, self.N],
+            self.W['recon'] = tf.get_variable("W_recon", shape=[dim, self.data.features],
                                               initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('W_recon', self.W['recon'], ['main'])
-            self.B['recon'] = tf.get_variable("B_recon", shape=[self.N],
+            self.B['recon'] = tf.get_variable("B_recon", shape=[self.data.features],
                                               initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_recon', self.B['recon'], ['main'])
             result = black_magic(tf.add(tf.matmul(target, self.W['recon']), self.B['recon']), fun)
