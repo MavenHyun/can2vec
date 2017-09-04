@@ -316,7 +316,8 @@ class FarSeer:
                     opti = white_magic(meth, learn, cost)
                     c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
                                                                 feed_dict=self.train_dict)
-                    print("Test")
+                    print(surv_pred)
+                    print(surv_real)
                     print("Likelihood function value: ", c)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
