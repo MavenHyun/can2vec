@@ -319,13 +319,10 @@ class FarSeer:
                     c, _, summ, surv_pred, surv_real, prod = sess.run([cost, opti, merged,
                                                                        result, self.P['sur'], final_sum],
                                                                 feed_dict=self.train_dict)
-                    print(prod)
-                    print(surv_pred)
                     print("Likelihood function value: ", c)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
-                    if iter % 100 == 0:
-                        print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
-                        print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
+                    print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
+                    print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
                     train_writer.add_summary(summ, iter)
                 test_pred, test_real = sess.run([result, self.P['sur']], feed_dict=self.test_dict)
                 print("C-Index for test session", self.estat_cindex(test_pred, test_real, 'test'))
