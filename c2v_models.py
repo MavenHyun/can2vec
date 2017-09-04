@@ -202,7 +202,7 @@ class FarSeer:
         pairs, epairs, tied, x = 0, 0, 0, 0
         for i in range(samples):
             for j in range(samples):
-                if i == j or self.C[type][i, 0] * self.C[type][j, 0] != 1.0:
+                if i == j or self.C[type][i, 0] + self.C[type][j, 0] != 0.0:
                     x += 1
                 else:
                     pairs += 1
@@ -316,10 +316,10 @@ class FarSeer:
                     c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
                                                                 feed_dict=self.train_dict)
                     print("Likelihood function value: ", c)
+                    print(surv_pred)
+                    print(surv_real)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
-                        print(surv_pred)
-                        print(surv_real)
                         print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
                         print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
                     train_writer.add_summary(summ, iter)
