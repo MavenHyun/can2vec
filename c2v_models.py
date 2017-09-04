@@ -312,12 +312,14 @@ class FarSeer:
                 for iter in range(epochs):
                     surv_time = sess.run([self.P['sur']], feed_dict=self.train_dict)
                     partial_sum = self.cox_cummulative(result, surv_time)
-                    cost = -tf.reduce_sum(tf.subtract(tf.log(result + 1), tf.log(partial_sum + 1)) * self.data.T['cen'])
+                    final_sum = tf.subtract(tf.log(result + 1), tf.log(partial_sum + 1)) * self.data.T['cen']
+                    cost = -tf.reduce_sum(final_sum)
                     opti = white_magic(meth, learn, cost)
-                    c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
+                    c, _, summ, surv_pred, surv_real, prod = sess.run([cost, opti, merged,
+                                                                       result, self.P['sur'], final_sum],
                                                                 feed_dict=self.train_dict)
+                    print(prod)
                     print(surv_pred)
-                    print(surv_real)
                     print("Likelihood function value: ", c)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
                     if iter % 100 == 0:
