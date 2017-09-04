@@ -194,7 +194,7 @@ class FarSeer:
                 y += 1
             out.append(sum)
             x += 1
-        result = tf.concat(out, 1)
+        result = tf.concat(out, 0)
         print(result)
         return result
 
