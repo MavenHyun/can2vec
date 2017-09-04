@@ -196,7 +196,7 @@ class FarSeer:
                 y += 1
             out.append(sum)
             x += 1
-        result = tf.concat(out, 1) + 1
+        result = tf.concat(out, 1)
         return result
 
     def estat_cindex(self, pred, real, type):
@@ -314,7 +314,7 @@ class FarSeer:
                 for iter in range(epochs):
                     surv_time = sess.run([self.P['sur']], feed_dict=self.train_dict)
                     partial_sum = self.cox_cummulative(result, surv_time)
-                    cost = -tf.reduce_sum(tf.subtract(tf.log(result), tf.log(partial_sum)) * self.C['train'])
+                    cost = -tf.reduce_sum(tf.subtract(tf.log(result + 1), tf.log(partial_sum + 1)) * self.C['train'])
                     opti = white_magic(meth, learn, cost)
                     c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
                                                                 feed_dict=self.train_dict)
