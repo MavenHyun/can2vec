@@ -2,7 +2,7 @@ import train_set as ts
 import c2v_models as cv
 import tensorflow as tf
 
-def run_model(pretrain):
+def create_model(pretrain):
     tr = ts.data_set("ACC", 45, 30)
     tr.data_extract()
     tr.data_preprocess()
@@ -47,10 +47,18 @@ def run_model(pretrain):
     with tf.name_scope("RConstructor"):
         pro = maven.data_projector(vector, 619, 619, 'relu')
         rec = maven.re_constructor(pro, 619, 'raw')
-        maven.optimize_RConstructor(rec, 'adam', 10001, 1e-3)
 
-    #with tf.name_scope("SPredictor"):
-    #   pro = maven.data_projector(vector, 619, 20000, 'relu')
-    #   pro2 = maven.data_projector(pro, 20000, 619, 'relu')
-    #   pre = maven.surv_predictor(pro2, 619, 'relu')
-    #   maven.optimize_CPredictor(pre, 'grad', 10001, 1e-6)
+    with tf.name_scope("SPredictor"):
+       pro1 = maven.data_projector(vector, 619, 20000, 'relu')
+       pro2 = maven.data_projector(pro1, 20000, 619, 'relu')
+       pre = maven.surv_predictor(pro2, 619, 'relu')
+
+    cast_spell('cox', maven, pre)
+
+def cast_spell(name, c2v, result):
+    magic_spell = {
+        'sur': c2v.optimize_SPredictor(result, 'adag', 10001, 1e-3),
+        'cox': c2v.optimize_CPredictor(result, 'grad', 10001, 1e-3),
+        'rec': c2v.optimize_RConstructor(result, 'adam', 10001, 1e-3)
+        }
+    return magic_spell[name]
