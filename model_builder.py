@@ -44,8 +44,13 @@ def run_model(pretrain):
     with tf.name_scope("Feature_Vector"):
         vector = tf.concat([mRNA, CNV, mut, cli], 1)
 
-    with tf.name_scope("SPredictor"):
-        pro = maven.data_projector(vector, 619, 20000, 'relu')
-        pro2 = maven.data_projector(pro, 20000, 619, 'relu')
-        pre = maven.surv_predictor(pro2, 619, 'relu')
-        maven.optimize_CPredictor(pre, 'grad', 10001, 1e-6)
+    with tf.name_scope("RConstructor"):
+        pro = maven.data_projector(vector, 619, 619, 'relu')
+        rec = maven.re_constructor(pro, 619, 'raw')
+        maven.optimize_RConstructor(rec, 'adam', 10001, 1e-6)
+
+    #with tf.name_scope("SPredictor"):
+    #   pro = maven.data_projector(vector, 619, 20000, 'relu')
+    #   pro2 = maven.data_projector(pro, 20000, 619, 'relu')
+    #   pre = maven.surv_predictor(pro2, 619, 'relu')
+    #   maven.optimize_CPredictor(pre, 'grad', 10001, 1e-6)

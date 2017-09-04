@@ -282,7 +282,8 @@ class FarSeer:
                 for iter in range(epochs):
                     train_cost, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
                                                                          feed_dict=self.train_dict)
-                    valid_cost, valid_pred, valid_real = sess.run([cost, result, self.P['sur']], feed_dict=self.vali_dict)
+                    valid_cost, valid_pred, valid_real = sess.run([cost, result, self.P['sur']],
+                                                                  feed_dict=self.vali_dict)
                     if iter % 100 == 0:
                         print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
                         print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
@@ -325,9 +326,9 @@ class FarSeer:
                 print("C-Index for test session", self.estat_cindex(test_pred, test_real, 'test'))
                 saver.save(sess, "./saved/model_step2.ckpt")
 
-    def optimize_RConstructor(self, result, answer, meth, epochs, learn):
+    def optimize_RConstructor(self, result, meth, epochs, learn):
         with tf.name_scope("Reconstruction_Optimizer"):
-            cost = tf.reduce_mean(tf.pow(result - answer, 2))
+            cost = tf.reduce_mean(tf.pow(result - self.P['recon'], 2))
             opti = white_magic(meth, learn, cost)
             tf.summary.scalar('cost_reconstruction', cost, collections=['main'])
             merged = tf.summary.merge_all('main')
@@ -339,7 +340,7 @@ class FarSeer:
                 saver = tf.train.Saver(self.var_dict)
                 train_writer = tf.summary.FileWriter("./PHASE3/" + str(datetime.now()), sess.graph, )
                 sess.run(init)
-                saver.restore(sess, "./saved/model_step2.ckpt")
+                saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
                     train_cost, _, summ = sess.run([cost, opti, merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
