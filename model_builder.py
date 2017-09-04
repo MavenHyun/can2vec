@@ -2,6 +2,7 @@ import train_set as ts
 import c2v_models as cv
 import tensorflow as tf
 
+
 def create_model(pretrain):
     tr = ts.data_set("ACC", 45, 30)
     tr.data_extract()
@@ -44,21 +45,9 @@ def create_model(pretrain):
     with tf.name_scope("Feature_Vector"):
         vector = tf.concat([mRNA, CNV, mut, cli], 1)
 
-    with tf.name_scope("RConstructor"):
-        pro = maven.data_projector(vector, 619, 619, 'relu')
-        rec = maven.re_constructor(pro, 619, 'raw')
-
     with tf.name_scope("SPredictor"):
-       pro1 = maven.data_projector(vector, 619, 20000, 'relu')
-       pro2 = maven.data_projector(pro1, 20000, 619, 'relu')
-       pre = maven.surv_predictor(pro2, 619, 'relu')
+        pro1 = maven.data_projector(vector, 619, 20000, 'relu')
+        pro2 = maven.data_projector(pro1, 20000, 619, 'relu')
+        pre = maven.surv_predictor(pro2, 619, 'relu')
+        maven.optimize_CPredictor(pre, 'adam', 10001, 1e-3)
 
-    cast_spell('cox', maven, pre)
-
-def cast_spell(name, c2v, result):
-    magic_spell = {
-        'sur': c2v.optimize_SPredictor(result, 'adag', 10001, 1e-3),
-        'cox': c2v.optimize_CPredictor(result, 'grad', 10001, 1e-3),
-        'rec': c2v.optimize_RConstructor(result, 'adam', 10001, 1e-3)
-        }
-    return magic_spell[name]
