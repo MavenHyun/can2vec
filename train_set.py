@@ -32,6 +32,7 @@ class data_set:
                   'CNV': np.array(df.values[c + m:c + m + v, 1:]).transpose(),
                   'mRNA': np.array(df.values[c + m + v:c + m + v + r, 1:]).transpose()}
         self.samples = self.X['all'].shape[0]
+        self.features = self.X['all'].shape[1]
         
         df = pd.read_csv(self.type + "_survival.tsv", '\t')
         raw_input = df.values[:, 1:]

@@ -219,7 +219,7 @@ class FarSeer:
 
     def re_constructor(self, target, dim, fun):
         with tf.name_scope("PHD_4_Reconstruction"):
-            self.P['recon'] = tf.placeholder("float", [None, 1])
+            self.P['recon'] = tf.placeholder("float", [None, self.data.features])
             self.train_dict[self.P['recon']] = self.data.T['all']
             self.vali_dict[self.P['recon']] = self.data.V['all']
             self.test_dict[self.P['recon']] = self.data.S['all']
