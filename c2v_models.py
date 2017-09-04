@@ -190,8 +190,6 @@ class FarSeer:
             for val_y in values:
                 if x != y:
                     if time[0][y] > time[0][x]:
-                        print("y value is ", time[0][y])
-                        print("x value is ", time[0][x])
                         sum = tf.add(sum, val_y)
                 y += 1
             out.append(sum)
