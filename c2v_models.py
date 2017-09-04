@@ -190,6 +190,8 @@ class FarSeer:
             for val_y in values:
                 if x != y:
                     if time[0][y] > time[0][x]:
+                        print("y value is ", time[0][y])
+                        print("x value is ", time[0][x])
                         sum = tf.add(sum, val_y)
                 y += 1
             out.append(sum)
@@ -312,7 +314,7 @@ class FarSeer:
                 for iter in range(epochs):
                     surv_time = sess.run([self.P['sur']], feed_dict=self.train_dict)
                     partial_sum = self.cox_cummulative(result, surv_time)
-                    cost = -(tf.reduce_sum(tf.subtract(tf.log(result), tf.log(partial_sum)) * self.C['train']))
+                    cost = -tf.reduce_sum(tf.subtract(tf.log(result), tf.log(partial_sum)) * self.C['train'])
                     opti = white_magic(meth, learn, cost)
                     c, _, summ, surv_pred, surv_real = sess.run([cost, opti, merged, result, self.P['sur']],
                                                                 feed_dict=self.train_dict)
