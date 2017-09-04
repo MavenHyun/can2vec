@@ -47,7 +47,7 @@ def run_model(pretrain):
     with tf.name_scope("RConstructor"):
         pro = maven.data_projector(vector, 619, 619, 'relu')
         rec = maven.re_constructor(pro, 619, 'raw')
-        maven.optimize_RConstructor(rec, 'adam', 10001, 1e-6)
+        maven.optimize_RConstructor(rec, 'adam', 10001, 1e-3)
 
     #with tf.name_scope("SPredictor"):
     #   pro = maven.data_projector(vector, 619, 20000, 'relu')
