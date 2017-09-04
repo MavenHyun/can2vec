@@ -1,7 +1,8 @@
 import tensorflow as tf
 
 
-target = tf.placeholder(float, [None, 1])
+target = tf.placeholder("float", [None, 1])
+target2 = tf.placeholder("float", [None, 1])
 
 def cox_cummulative(target, time):
     target = tf.exp(target)
@@ -14,7 +15,7 @@ def cox_cummulative(target, time):
         sum = tf.zeros_like(val_x)
         for val_y in values:
             if x != y:
-                if time[0][y] > time[0][x]:
+                if time[y][0] > time[x][0]:
                     sum = tf.add(sum, val_y)
             y += 1
         out.append(sum)
@@ -22,9 +23,13 @@ def cox_cummulative(target, time):
     result = tf.concat(out, 1) + 1
     return result
 
-time = [[10], [5], [7], [8]]
+time = [[10], [5], [7], [8], [1]]
+cen = [[0], [1], [0], [1], [0]]
+
+sth = target * target2
 
 out = cox_cummulative(target, time)
 
 sess = tf.Session()
-sess.run()
+result = sess.run(sth, feed_dict={target: time, target2: cen})
+print(result)
