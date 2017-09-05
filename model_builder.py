@@ -49,5 +49,5 @@ def create_model(pretrain):
         pro1 = maven.data_projector(vector, 619, 20000, 'relu')
         pro2 = maven.data_projector(pro1, 20000, 619, 'relu')
         pre = maven.surv_predictor(pro2, 619, 'relu')
-        maven.optimize_CPredictor(pre, 'grad', 10001, 1e-6)
+        maven.optimize_CPredictor(pre, 'grad', 10001, 1e-3)
 
