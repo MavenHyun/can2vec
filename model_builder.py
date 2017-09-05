@@ -45,9 +45,8 @@ def create_model(pretrain):
     with tf.name_scope("Feature_Vector"):
         vector = tf.concat([mRNA, CNV, mut, cli], 1)
 
-    with tf.name_scope("SPredictor"):
-        pro1 = maven.data_projector(vector, 619, 20000, 'relu')
-        pro2 = maven.data_projector(pro1, 20000, 619, 'relu')
-        pre = maven.surv_predictor(pro2, 619, 'relu')
+    with tf.name_scope("Survival_Prediction"):
+        pro = maven.data_projector(vector, 619, 619, 'relu')
+        pre = maven.surv_predictor(pro, 619, 'relu')
         maven.optimize_CPredictor(pre, 'grad', 10001, 1e-4)
 

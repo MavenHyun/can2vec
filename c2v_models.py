@@ -296,7 +296,7 @@ class FarSeer:
                 print("Survivability Predictor Test Cost: ", test_cost, "Training Cost: ", train_cost,
                       "Evaluation Cost: ", valid_cost, "C-Index for test session: ",
                       self.estat_cindex(test_pred, test_real, 'test'), "Final Learning Rate: ", learn)
-                saver.save(sess, "./saved/model_step2.ckpt")
+                saver.save(sess, "./saved/survival_regression.ckpt")
 
     def optimize_CPredictor(self, result, meth, epochs, learn):
         with tf.name_scope("Train_CPredictor"):
@@ -325,7 +325,7 @@ class FarSeer:
                     train_writer.add_summary(summ, iter)
                 test_pred, test_real = sess.run([result, self.P['sur']], feed_dict=self.test_dict)
                 print("C-Index for test session", self.estat_cindex(test_pred, test_real, 'test'))
-                saver.save(sess, "./saved/model_step2.ckpt")
+                saver.save(sess, "./saved/cox_regression.ckpt")
 
     def optimize_RConstructor(self, result, meth, epochs, learn):
         with tf.name_scope("Reconstruction_Optimizer"):
@@ -341,7 +341,7 @@ class FarSeer:
                 saver = tf.train.Saver(self.var_dict)
                 train_writer = tf.summary.FileWriter("./PHASE3/" + str(datetime.now()), sess.graph, )
                 sess.run(init)
-                saver.restore(sess, "./saved/model_step1.ckpt")
+                saver.restore(sess, "./saved/data_reconstruction.ckpt")
                 for iter in range(epochs):
                     train_cost, _, summ = sess.run([cost, opti, merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
