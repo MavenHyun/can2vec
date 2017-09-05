@@ -59,7 +59,7 @@ class FarSeer:
             # Train, Eval and Test
             # For stacked encoders and projectors
             self.enc_stack, self.dec_stack = {}, {}
-            self.pro_stack, self.cox_stack = 0, 0
+            self.pro_stack = 0
             # A list of costs and optimizers
             self.item_list = []
             # For splitting censored data-set
@@ -72,7 +72,7 @@ class FarSeer:
 
     def not_encoder(self, fea):
         with tf.name_scope("PHD_4_" + fea + "_Training"):
-            self.P[fea] = tf.placeholder("float", [None, None])
+            self.P[fea] = tf.placeholder("float", [None, None], name='pholder_' + fea)
             self.train_dict[self.P[fea]] = self.data.T[fea]
             self.vali_dict[self.P[fea]] = self.data.V[fea]
             self.test_dict[self.P[fea]] = self.data.S[fea]
@@ -83,7 +83,7 @@ class FarSeer:
         self.enc_stack[fea] = 0
         self.dec_stack[fea] = 0
         with tf.name_scope("PHD_4_" + fea + "_Training"):
-            self.P[fea] = tf.placeholder("float", [None, None])
+            self.P[fea] = tf.placeholder("float", [None, None], name='pholder_' + fea)
             self.train_dict[self.P[fea]] = self.data.T[fea]
             self.vali_dict[self.P[fea]] = self.data.V[fea]
             self.test_dict[self.P[fea]] = self.data.S[fea]
@@ -100,8 +100,9 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
             self.var_dict['B_' + name] = self.B[name]
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[name]), self.B[name]), fun),
-                                   self.drop)
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[name], name='mul_' + name),
+                                                      self.B[name], name='add_' + name), fun),
+                                   self.drop, name='drop_' + name)
         return result
 
     def mid_encoder(self, fea, dim0, dim1, fun, input):
@@ -118,8 +119,9 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
             self.var_dict['B_' + name] = self.B[name]
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name]), self.B[name]), fun),
-                                   self.drop)
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name], name='mul_' + name),
+                                                      self.B[name], name='add_' + name), fun),
+                                   self.drop, name='drop_' + name)
         return result
     
     def mid_decoder(self, fea, dim0, dim1, fun, input):
@@ -132,8 +134,9 @@ class FarSeer:
             self.B[name] = tf.get_variable(name='B_'+name, shape=[dim1], 
                                            initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name]), self.B[name]), fun),
-                                   self.drop)
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name], name='mul_' + name),
+                                                      self.B[name], name='add_' + name), fun),
+                                   self.drop, name='drop_' + name)
         return result
 
     def bot_decoder(self, enc, fea, dim, fun):
@@ -145,7 +148,8 @@ class FarSeer:
             self.B[name] = tf.get_variable(name='B_'+name, shape=[self.X[fea].shape[1]],
                                            initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_'+name, self.B[name], collections=[fea])
-            result = black_magic(tf.add(tf.matmul(enc, self.W[name]), self.B[name]), fun)
+            result = black_magic(tf.add(tf.matmul(enc, self.W[name], name='mul_' + name),
+                                        self.B[name], name='add_' + name), fun)
         return result
 
     def data_projector(self, target, dim0, dim1, fun):
@@ -158,8 +162,9 @@ class FarSeer:
             self.B[name] = tf.get_variable(name='B_'+name, shape=[dim1],
                                                initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_'+name,  self.B[name], ['main'])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(target, self.W[name]),
-                                               self.B[name]), fun), self.drop)
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(target, self.W[name], name='mul_' + name),
+                                                      self.B[name], name='add_' + name), fun),
+                                   self.drop, name='drop_' + name)
         return result
     
     def surv_predictor(self, target, dim, fun):
@@ -176,26 +181,27 @@ class FarSeer:
             self.B['sur'] = tf.get_variable("B_sur", shape=[1],
                                                initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_sur', self.B['sur'], ['main'])
-            result = black_magic(tf.add(tf.matmul(target, self.W['sur']), self.B['sur']), fun)
+            result = black_magic(tf.add(tf.matmul(target, self.W['sur'], name='mul_sur'),
+                                        self.B['sur'], name='add_sur'), fun)
             return result
 
     def cox_cummulative(self, target, time):
-        target = tf.exp(target)
-        target = tf.slice(target, [0, 0], [self.data.T['sur'].shape[0], -1])
-        values = tf.split(target, target.get_shape()[0], 0)
+        target = tf.exp(target, name='exp_cox')
+        target = tf.slice(target, [0, 0], [self.data.T['sur'].shape[0], -1], name='slice_cox')
+        values = tf.split(target, target.get_shape()[0], 0, name='split_cox')
         out = []
         x = 0
         for val_x in values:
             y = 0
-            sum = tf.zeros_like(val_x)
+            sum = tf.zeros_like(val_x, name='zeros_cox')
             for val_y in values:
                 if x != y:
                     if time[0][y] > time[0][x]:
-                        sum = tf.add(sum, val_y)
+                        sum = tf.add(sum, val_y, name='add_cox')
                 y += 1
             out.append(sum)
             x += 1
-        result = tf.concat(out, 0)
+        result = tf.concat(out, 0, name='concat_cox')
         return result
 
     def estat_cindex(self, pred, real, type):
@@ -232,7 +238,8 @@ class FarSeer:
             self.B['recon'] = tf.get_variable("B_recon", shape=[self.data.features],
                                               initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_recon', self.B['recon'], ['main'])
-            result = black_magic(tf.add(tf.matmul(target, self.W['recon']), self.B['recon']), fun)
+            result = black_magic(tf.add(tf.matmul(target, self.W['recon'], name='mul_recon'),
+                                        self.B['recon'], name='add_recon'), fun)
             return result
 
     def optimize_AEncoders(self):
@@ -312,7 +319,9 @@ class FarSeer:
                 for iter in range(epochs):
                     surv_time = sess.run([self.P['sur']], feed_dict=self.train_dict)
                     partial_sum = self.cox_cummulative(result, surv_time)
-                    final_sum = tf.subtract(tf.log(result + 1), tf.log(partial_sum + 1)) * self.data.T['cen']
+                    final_sum = tf.subtract(tf.log(result + 1, name='log1_cox'),
+                                            tf.log(partial_sum + 1, name='log2_cox'),
+                                            name='sub_cox') * self.data.T['cen']
                     cost = -tf.reduce_sum(final_sum)
                     opti = white_magic(meth, learn, cost)
                     c, _, summ, surv_pred, surv_real, prod = sess.run([cost, opti, merged,
