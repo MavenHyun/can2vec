@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from datetime import datetime
+from lifelines.utils import _naive_concordance_index
 
 #   Select your spell for activation function.
 def black_magic(operation, name):
@@ -284,9 +285,8 @@ class FarSeer:
                                                                          feed_dict=self.train_dict)
                     valid_cost, valid_pred, valid_real = sess.run([cost, result, self.P['sur']],
                                                                   feed_dict=self.vali_dict)
-                    if iter % 100 == 0:
-                        print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
-                        print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
+                    print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
+                    print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
                     learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, valid_cost, iter, epochs) is True:
                         break

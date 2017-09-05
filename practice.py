@@ -1,5 +1,5 @@
 import tensorflow as tf
-
+from lifelines.utils import _naive_concordance_index
 
 target = tf.placeholder("float", [None, 1])
 target2 = tf.placeholder("float", [None, 1])
@@ -25,11 +25,8 @@ def cox_cummulative(target, time):
 
 time = [[10], [5], [7], [8], [1]]
 cen = [[0], [1], [0], [1], [0]]
+sth = [[10], [4], [6], [9], [2]]
 
-sth = target * target2
+cindex = _naive_concordance_index(time, sth, cen)
+print(cindex)
 
-out = cox_cummulative(target, time)
-
-sess = tf.Session()
-result = sess.run(sth, feed_dict={target: time, target2: cen})
-print(result)
