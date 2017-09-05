@@ -290,8 +290,6 @@ class FarSeer:
                     print(np.transpose(surv_real))
                     print(np.transpose(surv_pred))
                     print(np.transpose(self.data.T['cen']))
-                    print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
-                    print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
                     learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, valid_cost, iter, epochs) is True:
                         break
