@@ -195,7 +195,6 @@ class FarSeer:
             out.append(sum)
             x += 1
         result = tf.concat(out, 0)
-        print(result)
         return result
 
     def estat_cindex(self, pred, real, type):
