@@ -288,18 +288,21 @@ class FarSeer:
                     valid_cost, valid_pred, valid_real = sess.run([cost, result, self.P['sur']],
                                                                   feed_dict=self.vali_dict)
                     r, p, o = np.transpose(surv_real), np.transpose(surv_pred), np.transpose(self.data.T['cen'])
-                    print(p)
-                    print(train_cost)
-                    print(_naive_concordance_index(r[0], p[0], o[0]))
+                    r2, p2, o2 = np.transpose(valid_real), np.transpose(valid_pred), np.transpose(self.data.V['cen'])
+                    print("Cost for training session", train_cost)
+                    print("C-Index for training session", _naive_concordance_index(r[0], p[0], o[0]))
+                    print("Cost for validation session", valid_cost)
+                    print("C-Index for validation session", _naive_concordance_index(r2[0], p2[0], o2[0]))
                     learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, valid_cost, iter, epochs) is True:
                         break
                     old_train = train_cost
                     train_writer.add_summary(summ, iter)
                 test_cost, test_pred, test_real = sess.run([cost, result, self.P['sur']], feed_dict=self.test_dict)
+                r3, p3, o3 = np.transpose(test_real), np.transpose(test_pred), np.transpose(self.data.S['cen'])
                 print("Survivability Predictor Test Cost: ", test_cost, "Training Cost: ", train_cost,
                       "Evaluation Cost: ", valid_cost, "C-Index for test session: ",
-                      self.estat_cindex(test_pred, test_real, 'test'), "Final Learning Rate: ", learn)
+                      _naive_concordance_index(r3[0], p3[0], o3[0]), "Final Learning Rate: ", learn)
                 saver.save(sess, "./saved/survival_regression.ckpt")
 
     def optimize_CPredictor(self, result, meth, epochs, learn):
@@ -324,13 +327,19 @@ class FarSeer:
                     c, _, summ, surv_pred, surv_real, prod = sess.run([cost, opti, merged,
                                                                        result, self.P['sur'], final_sum],
                                                                 feed_dict=self.train_dict)
+
                     print("Likelihood function value: ", c)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
-                    print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
-                    print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
+                    r, p, o = np.transpose(surv_real), np.transpose(surv_pred), np.transpose(self.data.T['cen'])
+                    r2, p2, o2 = np.transpose(valid_real), np.transpose(valid_pred), np.transpose(self.data.V['cen'])
+                    print("Predicted epsilons for training session", p)
+                    print("C-Index for training session", _naive_concordance_index(r[0], p[0], o[0]))
+                    print("Predicted epsilons for validation session", p2)
+                    print("C-Index for validation session", _naive_concordance_index(r2[0], p2[0], o2[0]))
                     train_writer.add_summary(summ, iter)
                 test_pred, test_real = sess.run([result, self.P['sur']], feed_dict=self.test_dict)
-                print("C-Index for test session", self.estat_cindex(test_pred, test_real, 'test'))
+                r3, p3, o3 = np.transpose(test_real), np.transpose(test_pred), np.transpose(self.data.S['cen'])
+                print("C-Index for test session", _naive_concordance_index(r3[0], p3[0], o3[0]))
                 saver.save(sess, "./saved/cox_regression.ckpt")
 
     def optimize_RConstructor(self, result, meth, epochs, learn):
