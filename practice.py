@@ -24,9 +24,15 @@ def cox_cummulative(target, time):
     return result
 
 time = [[10], [5], [7], [8], [1]]
-cen = [[0], [1], [0], [1], [0]]
-sth = [[10], [4], [6], [9], [2]]
+cen = [[False], [True], [False], [True], [False]]
+sth = [[2], [5], [7], [10], [13]]
+
+time2 = [10, 5, 7, 8, 1]
+cen2 = [0, 1, 0, 1, 0]
+sth2 = [2, 5, 7, 10, 13]
+
 
 cindex = _naive_concordance_index(time, sth, cen)
+cindex2 = _naive_concordance_index(time2, sth2, cen2)
 print(cindex)
-
+print(cindex2)

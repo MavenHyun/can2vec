@@ -62,11 +62,6 @@ class FarSeer:
             self.pro_stack = 0
             # A list of costs and optimizers
             self.item_list = []
-            # For splitting censored data-set
-            self.C = {}
-            self.C['train'] = self.data.T['cen']
-            self.C['valid'] = self.data.V['cen']
-            self.C['test'] = self.data.S['cen']
             # Dropout!
             self.drop = drop
 
@@ -292,6 +287,9 @@ class FarSeer:
                                                                          feed_dict=self.train_dict)
                     valid_cost, valid_pred, valid_real = sess.run([cost, result, self.P['sur']],
                                                                   feed_dict=self.vali_dict)
+                    print(np.transpose(surv_real))
+                    print(np.transpose(surv_pred))
+                    print(np.transpose(self.data.C['train']))
                     print("C-Index for training session", self.estat_cindex(surv_pred, surv_real, 'train'))
                     print("C-Index for validation session", self.estat_cindex(valid_pred, valid_real, 'valid'))
                     learn = grey_magic(learn, train_cost, old_train)
