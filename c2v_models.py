@@ -288,7 +288,8 @@ class FarSeer:
                     valid_cost, valid_pred, valid_real = sess.run([cost, result, self.P['sur']],
                                                                   feed_dict=self.vali_dict)
                     r, p, o = np.transpose(surv_real), np.transpose(surv_pred), np.transpose(self.data.T['cen'])
-                    print(r)
+                    print(p)
+                    print(train_cost)
                     print(_naive_concordance_index(r[0], p[0], o[0]))
                     learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, valid_cost, iter, epochs) is True:
