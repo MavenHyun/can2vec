@@ -181,15 +181,20 @@ class FarSeer:
 
     def cox_cummulative(self, target):
         target = tf.reverse(target, [-1], name='reverse_cox')
+        print(target)
         target = tf.exp(target, name='exp_cox')
+        print(target)
         target = tf.slice(target, [0, 0], [-1, self.data.T['sur'].shape[1]], name='slice_cox')
+        print(target)
         values = tf.split(target, target.get_shape()[1], 1, name='split_cox')
+        print(target)
         csum = tf.zeros_like(values[0], name='zeros_cox') + 1
         out = []
         for val in values:
             out.append(csum)
             csum = tf.add(csum, val, name='add_cox')
         result = tf.reverse(tf.concat(csum, 1, name='concat_cox'), [-1], name='reverse2_cox')
+        print(result)
         return result
 
     def re_constructor(self, target, dim, fun):
