@@ -294,13 +294,14 @@ class FarSeer:
                     final_sum = tf.subtract(tf.log(result + 1, name='log1_cox'),
                                             tf.log(partial_sum + 1, name='log2_cox'),
                                             name='sub_cox')
-                    final_product =  final_sum * self.data.T['cen']
+                    final_product = final_sum * self.data.T['cen']
                     cost = -tf.reduce_sum(final_product)
                     opti = white_magic('grad', learn, cost)
-                    c, _, summ, surv_pred, surv_real, prod = sess.run([cost, opti, merged,
-                                                                       result, self.P['sur'], final_sum],
+                    c, _, summ, surv_pred, surv_real, prod, part = sess.run([cost, opti, merged,
+                                                                       result, self.P['sur'], final_sum, partial_sum],
                                                                 feed_dict=self.train_dict)
                     print("Likelihood function value: ", c)
+                    print(part[0])
                     print(self.data.T['cen'])
                     print(prod[0])
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
