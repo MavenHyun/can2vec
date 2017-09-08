@@ -290,8 +290,7 @@ class FarSeer:
                 sess.run(init)
                 saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
-                    surv_time = sess.run([self.P['sur']], feed_dict=self.train_dict)
-                    partial_sum = self.cox_cummulative(result, surv_time)
+                    partial_sum = self.cox_cummulative(result)
                     final_sum = tf.subtract(tf.log(result + 1, name='log1_cox'),
                                             tf.log(partial_sum + 1, name='log2_cox'),
                                             name='sub_cox') * self.data.T['cen']
