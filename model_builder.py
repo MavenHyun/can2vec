@@ -40,10 +40,8 @@ def create_model(pretrain):
         maven.item_list.append(cv.SplitOptimizer('CNV', CNV_T, maven.P['CNV'], 'adam', 1001, 1e-3))
         maven.optimize_AEncoders()
 
-    with tf.name_scope("Feature_Vector"):
-        vector = tf.concat([mRNA, CNV, mut, cli], 0)
-
     with tf.name_scope("Survival_Prediction"):
+        vector = tf.concat([mRNA, CNV, mut, cli], 0)
         pro = maven.data_projector(vector, 6190, 'relu')
         pro2 = maven.data_projector(pro, 619, 'relu')
         pre = maven.surv_predictor(pro2, 'relu')
