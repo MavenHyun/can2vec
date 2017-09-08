@@ -98,14 +98,14 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
         return result
 
-    def mid_encoder(self, fea, dim0, dim1, fun, target):
+    def mid_encoder(self, fea, dim, fun, target):
         self.enc_stack[fea] += 1
         with tf.name_scope(fea + "_Encoder_L" + str(self.enc_stack[fea])):
             name = fea + '_encT_' + str(self.enc_stack[fea])
-            self.W[name] = tf.get_variable(name='W_' + name, shape=[dim0, dim1],
+            self.W[name] = tf.get_variable(name='W_' + name, shape=[dim, target.get_shape()[0]],
                                            initializer=tf.contrib.layers.xavier_initializer())
             self.var_dict['W_' + name] = self.W[name]
-            self.B[name] = tf.get_variable(name='B_' + name, shape=[dim0, 1],
+            self.B[name] = tf.get_variable(name='B_' + name, shape=[dim, 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
             self.var_dict['B_' + name] = self.B[name]
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
@@ -117,13 +117,13 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
         return result
     
-    def mid_decoder(self, fea, dim0, dim1, fun, target):
+    def mid_decoder(self, fea, dim, fun, target):
         self.dec_stack[fea] += 1
         with tf.name_scope(fea + "_Decoder_L" + str(self.dec_stack[fea])):
             name = fea + '_decT_' + str(self.dec_stack[fea])
-            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1], 
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim, target.get_shape()[0]],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim0, 1],
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim, 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
@@ -133,15 +133,15 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
 
-    def bot_decoder(self, enc, fea, dim, fun):
+    def bot_decoder(self, enc, fea, fun):
         with tf.name_scope(fea + "_Decoder"):
             name = fea + '_decT'
-            self.W[name] = tf.get_variable(name='W_'+name, shape=[self.data.F[fea], dim],
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[self.data.F[fea], enc.get_shape()[0]],
                                            initializer=tf.contrib.layers.xavier_initializer())
             self.B[name] = tf.get_variable(name='B_'+name, shape=[self.data.F[fea], 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
             result = black_magic(tf.add(tf.matmul(self.W[name], enc, name='mul_' + name),
-                                                     self.B[name], name='add_' + name), fun)
+                                        self.B[name], name='add_' + name), fun)
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result

@@ -18,7 +18,7 @@ target2 = tf.placeholder("float", [1, None])
 
 def cox_cummulative(target):
     target = tf.reverse(target, [-1], name='reverse_cox')
-    target = tf.exp(target, name='exp_cox')
+    #target = tf.exp(target, name='exp_cox')
     target = tf.slice(target, [0, 0], [-1, 45], name='slice_cox')
     values = tf.split(target, target.get_shape()[1], 1, name='split_cox')
     csum = tf.zeros_like(values[0], name='zeros_cox')

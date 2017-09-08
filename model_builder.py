@@ -15,11 +15,11 @@ def create_model(pretrain):
 
     with tf.name_scope("mRNA_AEncoder"):
         enc = maven.top_encoder('mRNA', 5000, 'relu')
-        enc1 = maven.mid_encoder('mRNA', 5000, 4000, 'relu', enc)
-        enc2 = maven.mid_encoder('mRNA', 4000, 400, 'relu', enc1)
-        dec2 = maven.mid_decoder('mRNA', 400, 4000, 'relu', enc2)
-        dec1 = maven.mid_decoder('mRNA', 4000, 5000, 'relu', dec2)
-        mRNA_T = maven.bot_decoder(dec1, 'mRNA', 5000, 'relu')
+        enc1 = maven.mid_encoder('mRNA', 4000, 'relu', enc)
+        enc2 = maven.mid_encoder('mRNA', 400, 'relu', enc1)
+        dec2 = maven.mid_decoder('mRNA', 4000, 'relu', enc2)
+        dec1 = maven.mid_decoder('mRNA', 5000, 'relu', dec2)
+        mRNA_T = maven.bot_decoder(dec1, 'mRNA', 'relu')
         mRNA = enc2
 
     with tf.name_scope("mut_AEncoder"):
