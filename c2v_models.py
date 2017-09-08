@@ -303,15 +303,15 @@ class FarSeer:
                     print("Likelihood function value: ", c)
                     print(prod)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
-                    r, p, o = np.transpose(surv_real), np.transpose(surv_pred), np.transpose(self.data.T['cen'])
-                    r2, p2, o2 = np.transpose(valid_real), np.transpose(valid_pred), np.transpose(self.data.V['cen'])
+                    r, p, o = surv_real, surv_pred, self.data.T['cen']
+                    r2, p2, o2 = valid_real, valid_pred, self.data.V['cen']
                     print("Predicted epsilons for training session", p)
                     print("C-Index for training session", _naive_concordance_index(r[0], p[0], o[0]))
                     print("Predicted epsilons for validation session", p2)
                     print("C-Index for validation session", _naive_concordance_index(r2[0], p2[0], o2[0]))
                     train_writer.add_summary(summ, iter)
                 test_pred, test_real = sess.run([result, self.P['sur']], feed_dict=self.test_dict)
-                r3, p3, o3 = np.transpose(test_real), np.transpose(test_pred), np.transpose(self.data.S['cen'])
+                r3, p3, o3 = test_real, test_pred, self.data.S['cen']
                 print("C-Index for test session", _naive_concordance_index(r3[0], p3[0], o3[0]))
                 saver.save(sess, "./saved/cox_regression.ckpt")
 
