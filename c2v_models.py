@@ -133,14 +133,14 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
 
-    def bot_decoder(self, enc, fea, fun):
+    def bot_decoder(self, fea, fun, target):
         with tf.name_scope(fea + "_Decoder"):
             name = fea + '_decT'
             self.W[name] = tf.get_variable(name='W_'+name, shape=[self.data.F[fea], enc.get_shape()[0]],
                                            initializer=tf.contrib.layers.xavier_initializer())
             self.B[name] = tf.get_variable(name='B_'+name, shape=[self.data.F[fea], 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            result = black_magic(tf.add(tf.matmul(self.W[name], enc, name='mul_' + name),
+            result = black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                         self.B[name], name='add_' + name), fun)
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])

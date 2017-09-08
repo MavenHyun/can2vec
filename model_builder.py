@@ -19,19 +19,19 @@ def create_model(pretrain):
         enc2 = maven.mid_encoder('mRNA', 400, 'relu', enc1)
         dec2 = maven.mid_decoder('mRNA', 4000, 'relu', enc2)
         dec1 = maven.mid_decoder('mRNA', 5000, 'relu', dec2)
-        mRNA_T = maven.bot_decoder(dec1, 'mRNA', 'relu')
+        mRNA_T = maven.bot_decoder('mRNA', 'relu', dec1)
         mRNA = enc2
 
     with tf.name_scope("mut_AEncoder"):
         enc = maven.top_encoder('mut', 100, 'relu')
-        mut_T = maven.bot_decoder(enc, 'mut', 100, 'relu')
+        mut_T = maven.bot_decoder('mut', 'relu', enc)
         mut = enc
 
     with tf.name_scope("CNV_AEncoder"):
         enc = maven.top_encoder('CNV', 1000, 'tanh')
-        enc1 = maven.mid_encoder('CNV', 1000, 100, 'tanh', enc)
-        dec1 = maven.mid_decoder('CNV', 100, 1000, 'tanh', enc1)
-        CNV_T = maven.bot_decoder(dec1, 'CNV', 1000, 'tanh')
+        enc1 = maven.mid_encoder('CNV', 100, 'tanh', enc)
+        dec1 = maven.mid_decoder('CNV', 1000, 'tanh', enc1)
+        CNV_T = maven.bot_decoder('CNV', 'tanh', dec1)
         CNV = enc1
 
     if pretrain is True:
