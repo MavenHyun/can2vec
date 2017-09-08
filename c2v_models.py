@@ -190,7 +190,6 @@ class FarSeer:
             out.append(csum)
             csum = tf.add(csum, val, name='add_cox')
         result = tf.reverse(tf.concat(out, 1, name='concat_cox'), [-1], name='reverse2_cox')
-        print(result)
         return result
 
     def re_constructor(self, target, dim, fun):
@@ -302,7 +301,6 @@ class FarSeer:
                                                                        result, self.P['sur'], final_sum, partial_sum],
                                                                 feed_dict=self.train_dict)
                     print("Likelihood function value: ", c)
-                    print(surv_pred)
                     print(part)
                     print(self.data.T['cen'])
                     print(prod[0])
