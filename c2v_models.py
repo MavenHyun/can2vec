@@ -52,16 +52,14 @@ class FarSeer:
     def __init__(self, dataset, drop):
         with tf.name_scope("Basic_Settings"):
             # Needs revamp!
-            self.data, self.X, self.N = dataset, dataset.X, dataset.X['all'].shape[0]
+            self.data, self.features = dataset, dataset.F['all']
             self.P, self.W, self.B = {}, {}, {}
+            self.item_list = []
             # For feeding dicts and saving variables
             self.train_dict, self.vali_dict, self.test_dict, self.var_dict = {}, {}, {}, {}
-            # Train, Eval and Test
             # For stacked encoders and projectors
             self.enc_stack, self.dec_stack = {}, {}
             self.pro_stack = 0
-            # A list of costs and optimizers
-            self.item_list = []
             # Dropout!
             self.drop = drop
 
@@ -85,66 +83,67 @@ class FarSeer:
 
         with tf.name_scope(fea + "_Encoder"):
             name = fea + '_encT'
-            self.W[name] = tf.get_variable(name='W_' + name, shape=[self.X[fea].shape[1], dim],
+            self.W[name] = tf.get_variable(name='W_' + name, shape=[dim, self.data.F[fea]],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
-            tf.summary.histogram('W_' + name, self.W[name], collections=['main'])
             self.var_dict['W_' + name] = self.W[name]
-            self.B[name] = tf.get_variable(name='B_' + name, shape=[dim],
+            self.B[name] = tf.get_variable(name='B_' + name, shape=[dim, 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
-            tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
             self.var_dict['B_' + name] = self.B[name]
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.P[fea], self.W[name], name='mul_' + name),
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], self.P[fea], name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
                                    self.drop, name='drop_' + name)
+            tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
+            tf.summary.histogram('W_' + name, self.W[name], collections=['main'])
+            tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
+            tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
         return result
 
-    def mid_encoder(self, fea, dim0, dim1, fun, input):
+    def mid_encoder(self, fea, dim0, dim1, fun, target):
         self.enc_stack[fea] += 1
         with tf.name_scope(fea + "_Encoder_L" + str(self.enc_stack[fea])):
             name = fea + '_encT_' + str(self.enc_stack[fea])
             self.W[name] = tf.get_variable(name='W_' + name, shape=[dim0, dim1],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
-            tf.summary.histogram('W_' + name, self.W[name], collections=['main'])
             self.var_dict['W_' + name] = self.W[name]
-            self.B[name] = tf.get_variable(name='B_' + name, shape=[dim1],
+            self.B[name] = tf.get_variable(name='B_' + name, shape=[dim0, 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
-            tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
             self.var_dict['B_' + name] = self.B[name]
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name], name='mul_' + name),
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
                                    self.drop, name='drop_' + name)
+            tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
+            tf.summary.histogram('W_' + name, self.W[name], collections=['main'])
+            tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
+            tf.summary.histogram('B_' + name, self.B[name], collections=['main'])
         return result
     
-    def mid_decoder(self, fea, dim0, dim1, fun, input):
+    def mid_decoder(self, fea, dim0, dim1, fun, target):
         self.dec_stack[fea] += 1
         with tf.name_scope(fea + "_Decoder_L" + str(self.dec_stack[fea])):
             name = fea + '_decT_' + str(self.dec_stack[fea])
             self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1], 
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
-            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim1], 
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim0, 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(input, self.W[name], name='mul_' + name),
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
                                    self.drop, name='drop_' + name)
+
+            tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
+            tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
 
     def bot_decoder(self, enc, fea, dim, fun):
         with tf.name_scope(fea + "_Decoder"):
             name = fea + '_decT'
-            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim, self.X[fea].shape[1]],
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[self.data.F[fea], dim],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_'+name, self.W[name], collections=[fea])
-            self.B[name] = tf.get_variable(name='B_'+name, shape=[self.X[fea].shape[1]],
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[self.data.F[fea], 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_'+name, self.B[name], collections=[fea])
-            result = black_magic(tf.add(tf.matmul(enc, self.W[name], name='mul_' + name),
-                                        self.B[name], name='add_' + name), fun)
+            result = black_magic(tf.add(tf.matmul(self.W[name], enc, name='mul_' + name),
+                                                     self.B[name], name='add_' + name), fun)
+            tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
+            tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
 
     def data_projector(self, target, dim0, dim1, fun):
@@ -153,18 +152,18 @@ class FarSeer:
             name = 'proj_' + str(self.pro_stack)
             self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_'+name,  self.W[name], ['main'])
-            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim1],
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim0, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_'+name,  self.B[name], ['main'])
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(target, self.W[name], name='mul_' + name),
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
                                    self.drop, name='drop_' + name)
+            tf.summary.histogram('W_' + name, self.W[name], ['main'])
+            tf.summary.histogram('B_' + name, self.B[name], ['main'])
         return result
     
     def surv_predictor(self, target, dim, fun):
         with tf.name_scope("PHD_4_Prediction"):
-            self.P['sur'] = tf.placeholder("float", [None, 1])
+            self.P['sur'] = tf.placeholder("float", [1, None])
             self.train_dict[self.P['sur']] = self.data.T['sur']
             self.vali_dict[self.P['sur']] = self.data.V['sur']
             self.test_dict[self.P['sur']] = self.data.S['sur']
@@ -172,51 +171,25 @@ class FarSeer:
         with tf.name_scope("Survivability_Predictor"):
             self.W['sur'] = tf.get_variable("W_sur", shape=[dim, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('W_sur', self.W['sur'], ['main'])
-            self.B['sur'] = tf.get_variable("B_sur", shape=[1],
+            self.B['sur'] = tf.get_variable("B_sur", shape=[1, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            tf.summary.histogram('B_sur', self.B['sur'], ['main'])
-            result = black_magic(tf.add(tf.matmul(target, self.W['sur'], name='mul_sur'),
+            result = black_magic(tf.add(tf.matmul(self.W['sur'], target, name='mul_sur'),
                                         self.B['sur'], name='add_sur'), fun)
-            return result
-
-    def cox_cummulative(self, target, time):
-        target = tf.exp(target, name='exp_cox')
-        target = tf.slice(target, [0, 0], [self.data.T['sur'].shape[0], -1], name='slice_cox')
-        values = tf.split(target, target.get_shape()[0], 0, name='split_cox')
-        out = []
-        x = 0
-        for val_x in values:
-            y = 0
-            sum = tf.zeros_like(val_x, name='zeros_cox')
-            for val_y in values:
-                if x != y:
-                    if time[0][y] > time[0][x]:
-                        sum = tf.add(sum, val_y, name='add_cox')
-                y += 1
-            out.append(sum)
-            x += 1
-        result = tf.concat(out, 0, name='concat_cox')
+            tf.summary.histogram('W_sur', self.W['sur'], ['main'])
+            tf.summary.histogram('B_sur', self.B['sur'], ['main'])
         return result
 
-    def estat_cindex(self, pred, real, type):
-        samples = pred.shape[0]
-        pairs, epairs, tied, x = 0, 0, 0, 0
-        for i in range(samples):
-            for j in range(samples):
-                if i == j or self.C[type][i, 0] + self.C[type][j, 0] == 0.0:
-                    x += 1
-                else:
-                    pairs += 1
-                    if pred[i, 0] > pred[j, 0] and real[i, 0] > real[j, 0]:
-                        epairs += 1
-                    elif pred[i, 0] < pred[j, 0] and real[i, 0] < real[j, 0]:
-                        epairs += 1
-                    elif pred[i, 0] == pred[j, 0]:
-                        tied += 1
-                    else:
-                        x += 1
-        result = (epairs + (tied / 2)) / pairs
+    def cox_cummulative(self, target):
+        target = tf.reverse(target, [-1], name='reverse_cox')
+        target = tf.exp(target, name='exp_cox')
+        target = tf.slice(target, [0, 0], [-1, self.data.T['sur'].shape[1]], name='slice_cox')
+        values = tf.split(target, target.get_shape()[1], 1, name='split_cox')
+        csum = tf.zeros_like(values[0], name='zeros_cox') + 1
+        out = []
+        for val in values:
+            out.append(csum)
+            csum = tf.add(csum, val, name='add_cox')
+        result = tf.reverse(tf.concat(csum, 1, name='concat_cox'), [-1], name='reverse2_cox')
         return result
 
     def re_constructor(self, target, dim, fun):
@@ -227,13 +200,13 @@ class FarSeer:
             self.test_dict[self.P['recon']] = self.data.S['all']
 
         with tf.name_scope("Data_Reconstructor"):
-            self.W['recon'] = tf.get_variable("W_recon", shape=[dim, self.data.features],
+            self.W['recon'] = tf.get_variable("W_recon", shape=[self.data.features, dim],
                                               initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('W_recon', self.W['recon'], ['main'])
-            self.B['recon'] = tf.get_variable("B_recon", shape=[self.data.features],
+            self.B['recon'] = tf.get_variable("B_recon", shape=[self.data.features, 1],
                                               initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_recon', self.B['recon'], ['main'])
-            result = black_magic(tf.add(tf.matmul(target, self.W['recon'], name='mul_recon'),
+            result = black_magic(tf.add(tf.matmul(self.W['recon'], target, name='mul_recon'),
                                         self.B['recon'], name='add_recon'), fun)
             return result
 

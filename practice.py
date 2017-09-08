@@ -1,38 +1,36 @@
 import tensorflow as tf
+import numpy as np
+import train_set as ts
 from lifelines.utils import _naive_concordance_index
+import pandas as pd
 
-target = tf.placeholder("float", [None, 1])
-target2 = tf.placeholder("float", [None, 1])
 
-def cox_cummulative(target, time):
-    target = tf.exp(target)
-    target = tf.slice(target, [0, 0], [5, -1])
-    values = tf.split(target, target.get_shape()[0], 0)
+tr = ts.data_set("ACC", 45, 30)
+tr.data_extract()
+tr.data_preprocess()
+tr.data_split()
+tr.data_rearrange()
+
+
+target = tf.placeholder("float", [1, None])
+target2 = tf.placeholder("float", [1, None])
+
+
+def cox_cummulative(target):
+    target = tf.reverse(target, [-1], name='reverse_cox')
+    target = tf.exp(target, name='exp_cox')
+    target = tf.slice(target, [0, 0], [-1, 45], name='slice_cox')
+    values = tf.split(target, target.get_shape()[1], 1, name='split_cox')
+    csum = tf.zeros_like(values[0], name='zeros_cox')
     out = []
-    x = 0
-    for val_x in values:
-        y = 0
-        sum = tf.zeros_like(val_x)
-        for val_y in values:
-            if x != y:
-                if time[y][0] > time[x][0]:
-                    sum = tf.add(sum, val_y)
-            y += 1
-        out.append(sum)
-        x += 1
-    result = tf.concat(out, 1) + 1
+    for val in values:
+        out.append(csum)
+        csum = tf.add(csum, val, name='add_cox')
+    result = tf.reverse(tf.concat(out, 1, name='concat_cox'), [-1], name='unverse_cox')
     return result
 
-time = [[10], [5], [7], [8], [1]]
-cen = [[False], [True], [False], [True], [False]]
-sth = [[2], [5], [7], [10], [13]]
+sth = cox_cummulative(target)
 
-time2 = [10, 5, 7, 8, 1]
-cen2 = [0, 1, 0, 1, 0]
-sth2 = [2, 5, 7, 10, 13]
-
-
-cindex = _naive_concordance_index(time, sth, cen)
-cindex2 = _naive_concordance_index(time2, sth2, cen2)
-print(cindex)
-print(cindex2)
+sess = tf.Session()
+t = sess.run(sth, feed_dict={target: tr.T['sur']})
+print(t)

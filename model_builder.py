@@ -7,6 +7,7 @@ def create_model(pretrain):
     tr.data_extract()
     tr.data_preprocess()
     tr.data_split()
+    tr.data_rearrange()
     maven = cv.FarSeer(tr, 0.666)
 
     with tf.name_scope("Cli_AEncoder"):
@@ -42,12 +43,11 @@ def create_model(pretrain):
         maven.optimize_AEncoders()
 
     with tf.name_scope("Feature_Vector"):
-        vector = tf.concat([mRNA, CNV, mut, cli], 1)
+        vector = tf.concat([mRNA, CNV, mut, cli], 0)
 
     with tf.name_scope("Survival_Prediction"):
-        pro = maven.data_projector(vector, 619, 10000, 'relu')
-        pro2 = maven.data_projector(pro, 10000, 619, 'relu')
-        pre = maven.surv_predictor(pro2, 619, 'raw')
+        pro = maven.data_projector(vector, 619, 619, 'relu')
+        pre = maven.surv_predictor(pro, 619, 'raw')
         maven.optimize_CPredictor(pre, 'grad', 10001, 1e-12)
         maven.optimize_SPredictor(pre, 'adam', 10001, 1e-6)
 
