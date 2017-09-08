@@ -169,7 +169,7 @@ class FarSeer:
             self.test_dict[self.P['sur']] = self.data.S['sur']
 
         with tf.name_scope("Survivability_Predictor"):
-            self.W['sur'] = tf.get_variable("W_sur", shape=[dim, 1],
+            self.W['sur'] = tf.get_variable("W_sur", shape=[1, dim],
                                                initializer=tf.contrib.layers.xavier_initializer())
             self.B['sur'] = tf.get_variable("B_sur", shape=[1, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
