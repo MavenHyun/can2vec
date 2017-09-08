@@ -146,13 +146,13 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
 
-    def data_projector(self, target, dim0, dim1, fun):
+    def data_projector(self, target, dim, fun):
         self.pro_stack += 1
         with tf.name_scope("Data_Projector_" + str(self.pro_stack)):
             name = 'proj_' + str(self.pro_stack)
-            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1],
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim, target.get_shape()[0]],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim0, 1],
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
@@ -161,7 +161,7 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], ['main'])
         return result
     
-    def surv_predictor(self, target, dim, fun):
+    def surv_predictor(self, target, fun):
         with tf.name_scope("PHD_4_Prediction"):
             self.P['sur'] = tf.placeholder("float", [1, None])
             self.train_dict[self.P['sur']] = self.data.T['sur']
@@ -169,7 +169,7 @@ class FarSeer:
             self.test_dict[self.P['sur']] = self.data.S['sur']
 
         with tf.name_scope("Survivability_Predictor"):
-            self.W['sur'] = tf.get_variable("W_sur", shape=[1, dim],
+            self.W['sur'] = tf.get_variable("W_sur", shape=[1, target.get_shape()[0]],
                                                initializer=tf.contrib.layers.xavier_initializer())
             self.B['sur'] = tf.get_variable("B_sur", shape=[1, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
