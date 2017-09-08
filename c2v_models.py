@@ -302,7 +302,7 @@ class FarSeer:
                                                                 feed_dict=self.train_dict)
                     print("Likelihood function value: ", c)
                     print(surv_pred)
-                    print(part[0])
+                    print(part)
                     print(self.data.T['cen'])
                     print(prod[0])
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
