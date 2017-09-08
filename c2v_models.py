@@ -278,7 +278,7 @@ class FarSeer:
                       _naive_concordance_index(r3[0], p3[0], o3[0]), "Final Learning Rate: ", learn)
                 saver.save(sess, "./saved/survival_regression.ckpt")
 
-    def optimize_CPredictor(self, result, meth, epochs, learn):
+    def optimize_CPredictor(self, result, epochs, learn):
         with tf.name_scope("Train_CPredictor"):
             merged = tf.summary.merge_all('main')
             config = tf.ConfigProto()
@@ -296,7 +296,7 @@ class FarSeer:
                                             tf.log(partial_sum + 1, name='log2_cox'),
                                             name='sub_cox') * self.data.T['cen']
                     cost = -tf.reduce_sum(final_sum)
-                    opti = white_magic(meth, learn, cost)
+                    opti = white_magic('grad', learn, cost)
                     c, _, summ, surv_pred, surv_real, prod = sess.run([cost, opti, merged,
                                                                        result, self.P['sur'], final_sum],
                                                                 feed_dict=self.train_dict)
