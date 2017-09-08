@@ -136,7 +136,7 @@ class FarSeer:
     def bot_decoder(self, fea, fun, target):
         with tf.name_scope(fea + "_Decoder"):
             name = fea + '_decT'
-            self.W[name] = tf.get_variable(name='W_'+name, shape=[self.data.F[fea], enc.get_shape()[0]],
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[self.data.F[fea], target.get_shape()[0]],
                                            initializer=tf.contrib.layers.xavier_initializer())
             self.B[name] = tf.get_variable(name='B_'+name, shape=[self.data.F[fea], 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
