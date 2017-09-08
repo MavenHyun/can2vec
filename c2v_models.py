@@ -295,7 +295,7 @@ class FarSeer:
                                             tf.log(partial_sum + 1, name='log2_cox'),
                                             name='sub_cox')
                     final_product = final_sum * self.data.T['cen']
-                    cost = -tf.reduce_sum(tf.exp(final_product, name='exp_cox'))
+                    cost = -tf.reduce_sum(final_product)
                     opti = white_magic('grad', learn, cost)
                     c, _, summ, surv_pred, surv_real= sess.run([cost, opti, merged,result, self.P['sur']],
                                                                 feed_dict=self.train_dict)
