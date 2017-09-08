@@ -146,13 +146,13 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
 
-    def data_projector(self, target, dim, fun):
+    def data_projector(self, target, dim1, dim0, fun):
         self.pro_stack += 1
         with tf.name_scope("Data_Projector_" + str(self.pro_stack)):
             name = 'proj_' + str(self.pro_stack)
-            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim, target.get_shape()[0]],
+            self.W[name] = tf.get_variable(name='W_'+name, shape=[dim0, dim1],
                                                initializer=tf.contrib.layers.xavier_initializer())
-            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim, 1],
+            self.B[name] = tf.get_variable(name='B_'+name, shape=[dim0, 1],
                                                initializer=tf.contrib.layers.xavier_initializer())
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
