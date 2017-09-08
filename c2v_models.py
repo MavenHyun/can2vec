@@ -301,6 +301,7 @@ class FarSeer:
                                                                        result, self.P['sur'], final_sum, partial_sum],
                                                                 feed_dict=self.train_dict)
                     print("Likelihood function value: ", c)
+                    print(surv_pred)
                     print(part[0])
                     print(self.data.T['cen'])
                     print(prod[0])
