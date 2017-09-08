@@ -46,7 +46,7 @@ def create_model(pretrain):
     with tf.name_scope("Survival_Prediction"):
         pro = maven.data_projector(vector, 619, 619, 'relu')
         pre = maven.surv_predictor(pro, 619, 'relu')
-        maven.optimize_CPredictor(pre, 10001, 1e-15)
+        maven.optimize_CPredictor(pre, 10001, 1e-6)
         maven.optimize_SPredictor(pre, 'adam', 10001, 1e-6)
 
 
