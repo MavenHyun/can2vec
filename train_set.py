@@ -36,8 +36,10 @@ class data_set:
                   'cli': self.X['cli'].shape[0],
                   'mut': self.X['mut'].shape[0],
                   'CNV': self.X['CNV'].shape[0],
-                  'mRNA': self.X['mRNA'].shape[0] }
+                  'mRNA': self.X['mRNA'].shape[0]}
+
         self.samples = self.X['all'].shape[1]
+        self.features = self.X['all'].shape[0]
 
         df = pd.read_csv(self.type + "_survival.tsv", '\t')
         raw_input = df.values[:, 1:]

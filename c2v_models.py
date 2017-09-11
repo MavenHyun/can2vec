@@ -206,7 +206,7 @@ class FarSeer:
             self.B['recon'] = tf.get_variable("B_recon", shape=[self.data.features, 1],
                                               initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_recon', self.B['recon'], ['main'])
-            result = black_magic(tf.add(tf.matmul(self.W['recon'], target, name='mul_recon'),
+            result = black_magic(tf.add(tf.matmul(target, self.W['recon'], name='mul_recon'),
                                         self.B['recon'], name='add_recon'), fun)
             return result
 
@@ -325,7 +325,7 @@ class FarSeer:
                 saver = tf.train.Saver(self.var_dict)
                 train_writer = tf.summary.FileWriter("./PHASE3/" + str(datetime.now()), sess.graph, )
                 sess.run(init)
-                saver.restore(sess, "./saved/data_reconstruction.ckpt")
+                saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
                     train_cost, _, summ = sess.run([cost, opti, merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
