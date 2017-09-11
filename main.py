@@ -5,7 +5,7 @@ import model_builder as mb
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-mb.create_model(True)
+mb.create_model(False)
 
 
 
