@@ -44,8 +44,7 @@ def create_model(pretrain):
         vector = tf.concat([mRNA, CNV, mut, cli], 0)
         pro = maven.data_projector(vector, 619, 6190, 'relu')
         pro2 = maven.data_projector(pro, 6190, 619, 'relu')
-        pre = maven.surv_predictor(pro2, 'relu')
-        maven.optimize_CPredictor(pre, 10001, 1e-6)
+        pre = maven.surv_predictor(pro2, 'raw')
         maven.optimize_SPredictor(pre, 'adam', 10001, 1e-6)
 
 
