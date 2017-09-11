@@ -42,10 +42,9 @@ def create_model(pretrain):
 
     with tf.name_scope("Survival_Prediction"):
         vector = tf.concat([mRNA, CNV, mut, cli], 0)
-        pro = maven.data_projector(vector, 619, 6190, 'relu')
-        pro2 = maven.data_projector(pro, 6190, 619, 'relu')
-        #pre = maven.surv_predictor(pro2, 'raw')
-        #maven.optimize_SPredictor(pre, 'adam', 10001, 1e-6)
-        rec = maven.re_constructor(pro2, 'raw')
-        maven.optimize_RConstructor(rec, 'adam', 10001, 1e-6)
+        pro = maven.data_projector(vector, 619, 619, 'relu')
+        pre = maven.surv_predictor(pro, 'relu')
+        maven.optimize_SPredictor(pre, 'adam', 5001, 1e-6)
+        #rec = maven.re_constructor(pro, 'raw')
+        #maven.optimize_RConstructor(rec, 'adam', 5001, 1e-6)
 
