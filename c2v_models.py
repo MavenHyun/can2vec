@@ -192,7 +192,7 @@ class FarSeer:
         result = tf.reverse(tf.concat(out, 1, name='concat_cox'), [-1], name='reverse2_cox')
         return result
 
-    def re_constructor(self, target, dim, fun):
+    def re_constructor(self, target, fun):
         with tf.name_scope("PHD_4_Reconstruction"):
             self.P['recon'] = tf.placeholder("float", [self.data.features, None])
             self.train_dict[self.P['recon']] = self.data.T['all']
@@ -200,13 +200,13 @@ class FarSeer:
             self.test_dict[self.P['recon']] = self.data.S['all']
 
         with tf.name_scope("Data_Reconstructor"):
-            self.W['recon'] = tf.get_variable("W_recon", shape=[dim, self.data.features],
+            self.W['recon'] = tf.get_variable("W_recon", shape=[self.data.features, target.get_shape()[0]],
                                               initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('W_recon', self.W['recon'], ['main'])
-            self.B['recon'] = tf.get_variable("B_recon", shape=[dim, 1],
+            self.B['recon'] = tf.get_variable("B_recon", shape=[self.data.features, 1],
                                               initializer=tf.contrib.layers.xavier_initializer())
             tf.summary.histogram('B_recon', self.B['recon'], ['main'])
-            result = black_magic(tf.add(tf.matmul(target, self.W['recon'], name='mul_recon'),
+            result = black_magic(tf.add(tf.matmul(self.W['recon'], target, name='mul_recon'),
                                         self.B['recon'], name='add_recon'), fun)
             return result
 
