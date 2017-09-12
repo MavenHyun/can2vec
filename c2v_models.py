@@ -262,11 +262,12 @@ class FarSeer:
                                                                   feed_dict=self.vali_dict)
                     r, p, o = surv_real, surv_pred, self.data.T['cen']
                     r2, p2, o2 = valid_real, valid_pred, self.data.V['cen']
-                    print("Cost for training session", train_cost)
-                    print("C-Index for training session", _naive_concordance_index(r[0], p[0], o[0]))
-                    print("Cost for validation session", valid_cost)
-                    print("C-Index for validation session", _naive_concordance_index(r2[0], p2[0], o2[0]))
-                    learn = grey_magic(learn, train_cost, old_train)
+                    if iter % 100 == 0:
+                        print("Cost for training session", train_cost)
+                        print("C-Index for training session", _naive_concordance_index(r[0], p[0], o[0]))
+                        print("Cost for validation session", valid_cost)
+                        print("C-Index for validation session", _naive_concordance_index(r2[0], p2[0], o2[0]))
+                        learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, valid_cost, iter, epochs) is True:
                         break
                     old_train = train_cost
