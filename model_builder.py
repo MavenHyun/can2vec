@@ -46,5 +46,5 @@ def create_model(pretrain):
         #pre = maven.surv_predictor(pro, 'relu')
         #maven.optimize_SPredictor(pre, 'adag', 5001, 1e-3)
         rec = maven.re_constructor(pro, 'raw')
-        maven.optimize_RConstructor(rec, 'grad', 5001, 1e-12)
+        maven.optimize_RConstructor(rec, 'adam', 5001, 1e-3)
 
