@@ -56,6 +56,9 @@ class data_set:
                 for j in range(self.X['mRNA'].shape[1]):
                     self.X['mRNA'][i, j] = (self.X['mRNA'][i, j] - min) / (max - min)
 
+        for i in range(self.X['CNV'].shape[1]):
+            self.X['CNV'][0, i] += 2
+
         for i in range(self.X['cen'].shape[1]):
             self.X['cen'][0, i] = 1 - self.X['cen'][0, i]
 
