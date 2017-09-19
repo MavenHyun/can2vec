@@ -42,8 +42,8 @@ def create_model(pretrain):
 
     else:
         cli = maven.data_projector(cli, 19, 19, 'relu')
-        mRNA = maven.data_projector(cli, 400, 400, 'relu')
-        mut = maven.data_projector(cli, 100, 100, 'relu')
+        mRNA = maven.data_projector(mRNA, 400, 400, 'relu')
+        mut = maven.data_projector(mut, 100, 100, 'relu')
         CNV = maven.data_projector(CNV, 100, 100, 'relu')
         vector = tf.concat([mRNA, CNV, mut, cli], 0)
 
