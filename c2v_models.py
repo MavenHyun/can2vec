@@ -341,6 +341,56 @@ class FarSeer:
                 print("Survivability Predictor Test Cost: ", test_cost, "Training Cost: ", train_cost,
                       "Evaluation Cost: ", vali_cost, "Final Learning Rate: ", learn)
 
+    def SurvivalNet(self, n_hid):
+        ## some parameters
+        keep_prob = tf.placeholder(tf.float32)
+        penaltyLambda = tf.placeholder(tf.float32)
+        alpha = tf.placeholder(tf.float32)
+
+        ## data
+        input = tf.placeholder(tf.float32, [None, None])
+
+        ## layer_1
+        w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
+        output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, input)), keep_prob)
+        pred_layer1 = tf.nn.relu(tf.matmul(w_1, input))
+
+        ## layer_2
+        w_2 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
+        output_layer2 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_2, output_layer1)), keep_prob)
+        pred_layer2 = tf.nn.relu(tf.matmul(w_2, input))
+
+        ## layer_3
+        w_3 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
+        output_layer3 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_3, output_layer2)), keep_prob)
+        pred_layer3 = tf.nn.relu(tf.matmul(w_3, input))
+
+        ## layer_4
+        w_4 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
+        output_layer4 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_4, output_layer3)), keep_prob)
+        pred_layer4 = tf.nn.relu(tf.matmul(w_4, input))
+
+        ## layer_5
+        w_5 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
+        output_layer5 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_5, output_layer4)), keep_prob)
+        pred_layer5 = tf.nn.relu(tf.matmul(w_5, input))
+
+        ## output layer
+        w_6 = tf.Variable(tf.truncated_normal([1, n_hid], dtype=tf.float32) / 20)
+        output = tf.matmul(w_6, output_layer5)
+
+        partial_sum = self.cox_cummulative(output)
+        final_sum = tf.subtract(output, tf.log(partial_sum + 1e-50))
+        final_product = final_sum * self.data.T['cen']
+        cost = -tf.reduce_sum(final_product)
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_6))
+
+
+
+        opti = white_magic('grad', learn, cost)
+
+
+
 class SplitOptimizer:
     def __init__(self, fea, result, answer, meth, epochs, learn):
         with tf.name_scope("Split_Optimizer_" + fea):

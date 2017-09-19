@@ -40,12 +40,20 @@ def create_model(pretrain):
         maven.item_list.append(cv.SplitOptimizer('CNV', CNV_T, maven.P['CNV'], 'adam', 5001, 1e-4))
         maven.optimize_AEncoders()
 
-    with tf.name_scope("Survival_Prediction"):
+    else:
+        cli = maven.data_projector(cli, 19, 19, 'relu')
+        mRNA = maven.data_projector(cli, 400, 400, 'relu')
+        mut = maven.data_projector(cli, 100, 100, 'relu')
+        CNV = maven.data_projector(CNV, 100, 100, 'relu')
         vector = tf.concat([mRNA, CNV, mut, cli], 0)
-        #pro = maven.data_projector(vector, 619, 1000, 'relu')
-        #pre = maven.surv_predictor(pro, 'relu')
-        #maven.optimize_SPredictor(pre, 'adag', 5001, 1e-3)\
-        pro2 = maven.data_projector(vector, 619, 10000, 'relu')
-        rec = maven.re_constructor(pro2, 'relu')
-        maven.optimize_RConstructor(rec, 'adam', 5001, 1e-3)
+
+        with tf.name_scope("Survival_Prediction"):
+            pro = maven.data_projector(vector, 619, 619, 'relu')
+            pre = maven.surv_predictor(pro, 'relu')
+            maven.optimize_SPredictor(pre, 'adag', 5001, 1e-3)
+
+        with tf.name_scope("Data_Reconstruction"):
+            pro2 = maven.data_projector(vector, 619, 619, 'relu')
+            rec = maven.re_constructor(pro2, 'raw')
+            maven.optimize_RConstructor(rec, 'adam', 5001, 1e-3)
 
