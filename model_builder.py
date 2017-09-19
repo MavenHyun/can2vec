@@ -47,13 +47,13 @@ def create_model(pretrain):
         CNV = maven.data_projector(CNV, 100, 100, 'relu')
         vector = tf.concat([mRNA, CNV, mut, cli], 0)
 
-        with tf.name_scope("Survival_Prediction"):
-            pro = maven.data_projector(vector, 619, 619, 'relu')
-            pre = maven.surv_predictor(pro, 'relu')
-            maven.optimize_SPredictor(pre, 'adag', 5001, 1e-3)
+        #with tf.name_scope("Survival_Prediction"):
+        #   pro = maven.data_projector(vector, 619, 619, 'relu')
+        #   pre = maven.surv_predictor(pro, 'relu')
+        #   maven.optimize_SPredictor(pre, 'adag', 5001, 1e-3)
 
         with tf.name_scope("Data_Reconstruction"):
             pro2 = maven.data_projector(vector, 619, 619, 'relu')
-            rec = maven.re_constructor(pro2, 'raw')
+            rec = maven.re_constructor(pro2, 'relu')
             maven.optimize_RConstructor(rec, 'adam', 5001, 1e-3)
 
