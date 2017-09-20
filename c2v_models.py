@@ -342,52 +342,84 @@ class FarSeer:
                       "Evaluation Cost: ", vali_cost, "Final Learning Rate: ", learn)
 
     def SurvivalNet(self, n_hid):
-        ## some parameters
+        # some parameters
         keep_prob = tf.placeholder(tf.float32)
         penaltyLambda = tf.placeholder(tf.float32)
         alpha = tf.placeholder(tf.float32)
 
-        ## data
+        # data
         input = tf.placeholder(tf.float32, [None, None])
+        valid = tf.placeholder(tf.float32, [None, None])
+        test = tf.placeholder(tf.float32, [None, None])
 
-        ## layer_1
+        # layer_1
         w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
         output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, input)), keep_prob)
-        pred_layer1 = tf.nn.relu(tf.matmul(w_1, input))
+        valid_layer1 = tf.nn.relu(tf.matmul(w_1, valid))
+        test_layer1 = tf.nn.relu(tf.matmul(w_1, test))
 
-        ## layer_2
+        # layer_2
         w_2 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
         output_layer2 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_2, output_layer1)), keep_prob)
-        pred_layer2 = tf.nn.relu(tf.matmul(w_2, input))
+        valid_layer2 = tf.nn.relu(tf.matmul(w_2, valid_layer1))
+        test_layer2 = tf.nn.relu(tf.matmul(w_2, test_layer1))
 
-        ## layer_3
+        # layer_3
         w_3 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
         output_layer3 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_3, output_layer2)), keep_prob)
-        pred_layer3 = tf.nn.relu(tf.matmul(w_3, input))
+        valid_layer3 = tf.nn.relu(tf.matmul(w_3, valid_layer2))
+        test_layer3 = tf.nn.relu(tf.matmul(w_3, test_layer2))
 
-        ## layer_4
+        # layer_4
         w_4 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
         output_layer4 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_4, output_layer3)), keep_prob)
-        pred_layer4 = tf.nn.relu(tf.matmul(w_4, input))
+        valid_layer4 = tf.nn.relu(tf.matmul(w_4, valid_layer3))
+        test_layer4 = tf.nn.relu(tf.matmul(w_4, test_layer3))
 
-        ## layer_5
+        # layer_5
         w_5 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
         output_layer5 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_5, output_layer4)), keep_prob)
-        pred_layer5 = tf.nn.relu(tf.matmul(w_5, input))
+        valid_layer5 = tf.nn.relu(tf.matmul(w_5, valid_layer4))
+        test_layer5 = tf.nn.relu(tf.matmul(w_5, test_layer4))
 
-        ## output layer
+        # output layer
         w_6 = tf.Variable(tf.truncated_normal([1, n_hid], dtype=tf.float32) / 20)
         output = tf.matmul(w_6, output_layer5)
+        valid_o = tf.matmul(w_6, valid_layer5)
+        test_o = tf.matmul(w_6, test_layer5)
 
         partial_sum = self.cox_cummulative(output)
         final_sum = tf.subtract(output, tf.log(partial_sum + 1e-50))
         final_product = final_sum * self.data.T['cen']
         cost = -tf.reduce_sum(final_product)
         + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_6))
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_5))
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_4))
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_3))
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_2))
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_1))
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_6))
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_5))
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_4))
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_3))
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_2))
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_1))
 
+        valid_partial = self.cox_cummulative(valid_o)
+        valid_sub = tf.subtract(valid_o, tf.log(valid_partial + 1e-50))
+        valid_product = valid_sub * self.data.V['cen']
+        valid_cost = -tf.reduce_sum(valid_product)
 
+        test_partial = self.cox_cummulative(test_o)
+        test_sub = tf.subtract(test_o, tf.log(test_partial + 1e-50))
+        test_product = test_sub * self.data.T['cen']
+        test_cost = -tf.reduce_sum(test_product)
+        
+        global_step = tf.Variable(0, trainable=False)
+        starter_learning_rate = 0.0001
+        learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 100000, 0.989, staircase=True)
 
-        opti = white_magic('grad', learn, cost)
+        opti = white_magic('grad', learning_rate, cost)
 
 
 
