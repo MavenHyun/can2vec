@@ -55,5 +55,5 @@ def create_model(pretrain):
         with tf.name_scope("Data_Reconstruction"):
             pro2 = maven.data_projector(vector, 619, 619, 'relu')
             rec = maven.re_constructor(pro2, 'relu')
-            maven.optimize_RConstructor(rec, 'adam', 5001, 1e-3)
+            maven.optimize_RConstructor(rec, 'adam', 5001, 1e-1)
 
