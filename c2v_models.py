@@ -351,6 +351,9 @@ class FarSeer:
         input = tf.placeholder(tf.float32, [None, None])
         valid = tf.placeholder(tf.float32, [None, None])
         test = tf.placeholder(tf.float32, [None, None])
+        feed_train = {'input': self.data.T['all'], keep_prob: 1}
+        feed_valid = {'input': self.data.V['all'], keep_prob: 1}
+        feed_test = {'input': self.data.S['all'], keep_prob: 1}
 
         # layer_1
         w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
@@ -420,6 +423,26 @@ class FarSeer:
         learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 100000, 0.989, staircase=True)
 
         opti = white_magic('grad', learning_rate, cost)
+
+        alpha_array = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        lambda_array = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        for alpha_index in range(len(alpha_array)):
+
+            for lambda_index in range(len(lambda_array)):
+
+                for step in range(5001):
+                    with tf.Session(config=config) as sess:
+                        feed_train['penaltyLambda'] = lambda_array[lambda_index]
+                        feed_train['alpha'] = alpha_array[alpha_index]
+
+
+
+
+
+
 
 
 

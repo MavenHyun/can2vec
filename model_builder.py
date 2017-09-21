@@ -53,7 +53,7 @@ def create_model(pretrain):
         #   maven.optimize_SPredictor(pre, 'adag', 5001, 1e-3)
 
         with tf.name_scope("Data_Reconstruction"):
-            pro2 = maven.data_projector(vector, 619, 20000, 'relu')
+            pro2 = maven.data_projector(vector, 619, 5000, 'relu')
             rec = maven.re_constructor(pro2, 'raw')
-            maven.optimize_RConstructor(rec, 'adag', 20001, 1e-3)
+            maven.optimize_RConstructor(rec, 'rms', 20001, 1e-9)
 
