@@ -150,7 +150,7 @@ class FarSeer:
         return result
 
     def lesser_decoder(self, name, fun, target):
-        with tf.name_scope(self.W[name] + "_" + self.B[name] + "_Decoder"):
+        with tf.name_scope(name + "_lesser"):
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target), self.B[name]), fun), self.drop)
         return result
 
