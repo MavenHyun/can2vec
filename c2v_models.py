@@ -149,9 +149,9 @@ class FarSeer:
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
 
-    def lesser_decoder(self, weights, bias, fun, target):
-        with tf.name_scope(weights + "_" + bias + "_Decoder"):
-            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(weights, target), bias), fun), self.drop)
+    def lesser_decoder(self, name, fun, target):
+        with tf.name_scope(self.W[name] + "_" + self.B[name] + "_Decoder"):
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target), self.B[name]), fun), self.drop)
         return result
 
     def data_projector(self, target, dim1, dim0, fun):

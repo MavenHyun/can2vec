@@ -54,16 +54,16 @@ def create_model(pretrain):
 
         with tf.name_scope("Data_Reconstruction"):
             mRNA = maven.data_projector(vector, 619, 400, 'relu')
-            mRNA1 = maven.lesser_decoder(maven.W['mRNA_decT_1'], maven.B['mRNA_decT_1'], 'relu', mRNA)
-            mRNA2 = maven.lesser_decoder(maven.W['mRNA_decT_2'], maven.B['mRNA_decT_2'], 'relu', mRNA1)
-            mRNA_final = maven.lesser_decoder(maven.W['mRNA_decT'], maven.B['mRNA_decT'], 'relu', mRNA2)
+            mRNA1 = maven.lesser_decoder('mRNA_decT_1', 'relu', mRNA)
+            mRNA2 = maven.lesser_decoder('mRNA_decT_2', 'relu', mRNA1)
+            mRNA_final = maven.lesser_decoder('mRNA_decT', 'relu', mRNA2)
 
             mut = maven.data_projector(vector, 619, 100, 'relu')
-            mut_final = maven.lesser_decoder(maven.W['mut_decT'], maven.B['mut_decT'], 'relu', mut)
+            mut_final = maven.lesser_decoder('mut_decT', 'relu', mut)
 
             CNV = maven.data_projector(vector, 619, 100, 'relu')
-            CNV1 = maven.lesser_decoder(maven.W['CNV_decT_1'], maven.B['CNV_decT_1'], 'relu', CNV)
-            CNV_final = maven.lesser_decoder(maven.W['CNV_decT'], maven.B['CNV_decT'], 'relu', mut)
+            CNV1 = maven.lesser_decoder('CNV_decT_1', 'relu', CNV)
+            CNV_final = maven.lesser_decoder('CNV_decT', 'relu', CNV1)
 
             output = tf.concat[cli, mut_final, CNV_final, mRNA_final]
             maven.optimize_RConstructor(output, 'adam', 20001, 1e-3)
