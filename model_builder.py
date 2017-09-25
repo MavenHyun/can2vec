@@ -35,9 +35,9 @@ def create_model(pretrain):
         CNV = enc1
 
     if pretrain is True:
-        maven.item_list.append(cv.SplitOptimizer('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 50001, 1e-3))
-        maven.item_list.append(cv.SplitOptimizer('mut', mut_T, maven.P['mut'], 'adam', 50001, 1e-3))
-        maven.item_list.append(cv.SplitOptimizer('CNV', CNV_T, maven.P['CNV'], 'adam', 50001, 1e-3))
+        maven.item_list.append(cv.SplitOptimizer('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 5001, 1e-4))
+        maven.item_list.append(cv.SplitOptimizer('mut', mut_T, maven.P['mut'], 'adam', 5001, 1e-4))
+        maven.item_list.append(cv.SplitOptimizer('CNV', CNV_T, maven.P['CNV'], 'adam', 5001, 1e-4))
         maven.optimize_AEncoders()
 
     else:
