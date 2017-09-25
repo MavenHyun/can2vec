@@ -26,8 +26,8 @@ def create_model(pretrain):
         mut = enc
 
     with tf.name_scope("CNV_AEncoder"):
-        enc = maven.top_encoder('CNV', 1000, 'relu')
-        CNV_T = maven.bot_decoder('CNV', 'relu', enc)
+        enc = maven.top_encoder('CNV', 1000, 'tanh')
+        CNV_T = maven.bot_decoder('CNV', 'tanh', enc)
         CNV = enc
 
     if pretrain is True:
@@ -56,10 +56,10 @@ def create_model(pretrain):
             mut = maven.data_projector(vector, 3119, 100, 'relu')
             mut_final = maven.lesser_decoder('mut_decT', 'relu', mut)
 
-            CNV = maven.data_projector(vector, 619, 1000, 'relu')
-            CNV_final = maven.lesser_decoder('CNV_decT', 'relu', CNV)
+            CNV = maven.data_projector(vector, 3119, 1000, 'tanh')
+            CNV_final = maven.lesser_decoder('CNV_decT', 'tanh', CNV)
 
             output = tf.concat([cli, mut_final, CNV_final, mRNA_final], 0)
-            recon = maven.re_constructor(output, 'relu', False)
+            recon = maven.re_constructor(output, 'raw', False)
             maven.optimize_RConstructor(output, 'adam', 20001, 1e-3)
 
