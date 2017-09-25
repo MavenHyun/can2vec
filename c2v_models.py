@@ -330,7 +330,7 @@ class FarSeer:
                 for iter in range(epochs):
                     train_cost, _, summ = sess.run([cost, opti, merged], feed_dict=self.train_dict)
                     vali_cost = sess.run(cost, feed_dict=self.vali_dict)
-                    if iter % 100 == 0:
+                    if iter % 1 == 0:
                         print(iter, "Training Cost: ", train_cost, "Evaluation Cost: ", vali_cost)
                         learn = grey_magic(learn, train_cost, old_train)
                     if red_magic(learn, old_train, train_cost, old_vali, vali_cost, iter, epochs) is True:
@@ -351,9 +351,11 @@ class FarSeer:
         input = tf.placeholder(tf.float32, [None, None])
         valid = tf.placeholder(tf.float32, [None, None])
         test = tf.placeholder(tf.float32, [None, None])
-        feed_train = {'input': self.data.T['all'], keep_prob: 1}
-        feed_valid = {'input': self.data.V['all'], keep_prob: 1}
-        feed_test = {'input': self.data.S['all'], keep_prob: 1}
+        svnet = {}
+        svnet['input'] = self.data.T['all']
+        svnet['valid'] = self.data.V['all']
+        svnet['test'] = self.data.S['all']
+        svnet['keep_prob'] = 1
 
         # layer_1
         w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
@@ -433,11 +435,15 @@ class FarSeer:
             for lambda_index in range(len(lambda_array)):
                 for step in range(5001):
                     with tf.Session(config=config) as sess:
-                        feed_train['penaltyLambda'] = lambda_array[lambda_index]
-                        feed_train['alpha'] = alpha_array[alpha_index]
-                        output_train = sess.run(output, feed_dict=feed_train)
-                        cindex_train = _naive_concordance_index(self.T['all'], output_train, self.T['cen'])
-
+                        svnet['penaltyLambda'] = lambda_array[lambda_index]
+                        svnet['alpha'] = alpha_array[alpha_index]
+                        output_train, output_valid, output_test, _ = sess.run(output, valid_o, test_o, opti, feed_dict=svnet)
+                        if step % 100 == 0:
+                            cindex_train = _naive_concordance_index(self.T['all'], output_train, self.T['cen'])
+                            cindex_valid = _naive_concordance_index(self.V['all'], output_valid, self.V['cen'])
+                            print("SurvivalNet C-Index(T): ", cindex_train, "SurvivalNet C-Index(V)", cindex_valid)
+                        if step == 5000:
+                            cindex_test = _naive_concordance_index(self.S['all'], output_test, self.S['cen'])
 
 
 
