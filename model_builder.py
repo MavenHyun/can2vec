@@ -8,7 +8,7 @@ def create_model(pretrain):
     tr.data_preprocess()
     tr.data_split()
     tr.data_rearrange()
-    maven = cv.FarSeer(tr, 0.666)
+    maven = cv.FarSeer(tr, 0.888)
 
     with tf.name_scope("Cli_AEncoder"):
         cli = maven.not_encoder('cli')
@@ -41,11 +41,11 @@ def create_model(pretrain):
         maven.optimize_AEncoders()
 
     else:
-        cli = maven.data_projector(cli, 19, 19, 'relu')
-        mRNA = maven.data_projector(mRNA, 400, 400, 'relu')
-        mut = maven.data_projector(mut, 100, 100, 'relu')
-        CNV = maven.data_projector(CNV, 100, 100, 'relu')
-        vector = tf.concat([mRNA, CNV, mut, cli], 0)
+        #cli = maven.data_projector(cli, 19, 19, 'relu')
+        #mRNA = maven.data_projector(mRNA, 400, 400, 'relu')
+        #mut = maven.data_projector(mut, 100, 100, 'relu')
+        #CNV = maven.data_projector(CNV, 100, 100, 'relu')
+        vector = tf.concat([cli, mut, CNV, mRNA], 0)
 
         #with tf.name_scope("Survival_Prediction"):
         #   pro = maven.data_projector(vector, 619, 619, 'relu')
@@ -53,7 +53,18 @@ def create_model(pretrain):
         #   maven.optimize_SPredictor(pre, 'adag', 5001, 1e-3)
 
         with tf.name_scope("Data_Reconstruction"):
-            pro2 = maven.data_projector(vector, 619, 1000, 'relu')
-            rec = maven.re_constructor(pro2, 'raw')
-            maven.optimize_RConstructor(rec, 'adam', 20001, 1e-3)
+            mRNA = maven.data_projector(vector, 619, 400, 'relu')
+            mRNA_dec2 = maven.mid_decoder('mRNA', 2000, 'relu', mRNA)
+            mRNA_dec1 = maven.mid_decoder('mRNA', 5000, 'relu', mRNA_dec2)
+            mRNA_D = maven.bot_decoder('mRNA', 'relu', mRNA_dec1)
+
+            mut = maven.data_projector(vector, 619, 100, 'relu')
+            mut_D = maven.bot_decoder('mut', 'relu', mut)
+
+            CNV = maven.data_projector(vector, 619, 100, 'relu')
+            CNV_dec1 = maven.mid_decoder('CNV', 1000, 'relu', CNV)
+            CNV_D = maven.bot_decoder('CNV', 'relu', CNV_dec1)
+
+            output = tf.concat[cli, mut_D, CNV_D, mRNA_D]
+            maven.optimize_RConstructor(output, 'adam', 20001, 1e-3)
 

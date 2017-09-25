@@ -85,13 +85,13 @@ class FarSeer:
             name = fea + '_encT'
             self.W[name] = tf.get_variable(name='W_' + name, shape=[dim, self.data.F[fea]],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            self.var_dict['W_' + name] = self.W[name]
             self.B[name] = tf.get_variable(name='B_' + name, shape=[dim, 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            self.var_dict['B_' + name] = self.B[name]
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], self.P[fea], name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
                                    self.drop, name='drop_' + name)
+            self.var_dict['W_' + name] = self.W[name]
+            self.var_dict['B_' + name] = self.B[name]
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('W_' + name, self.W[name], collections=['main'])
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
@@ -104,13 +104,13 @@ class FarSeer:
             name = fea + '_encT_' + str(self.enc_stack[fea])
             self.W[name] = tf.get_variable(name='W_' + name, shape=[dim, target.get_shape()[0]],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            self.var_dict['W_' + name] = self.W[name]
             self.B[name] = tf.get_variable(name='B_' + name, shape=[dim, 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
-            self.var_dict['B_' + name] = self.B[name]
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
                                    self.drop, name='drop_' + name)
+            self.var_dict['W_' + name] = self.W[name]
+            self.var_dict['B_' + name] = self.B[name]
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('W_' + name, self.W[name], collections=['main'])
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
@@ -125,10 +125,12 @@ class FarSeer:
                                            initializer=tf.contrib.layers.xavier_initializer())
             self.B[name] = tf.get_variable(name='B_'+name, shape=[dim, 1],
                                            initializer=tf.contrib.layers.xavier_initializer())
+
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
                                    self.drop, name='drop_' + name)
-
+            self.var_dict['W_' + name] = self.W[name]
+            self.var_dict['B_' + name] = self.B[name]
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
@@ -142,6 +144,8 @@ class FarSeer:
                                            initializer=tf.contrib.layers.xavier_initializer())
             result = black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                         self.B[name], name='add_' + name), fun)
+            self.var_dict['W_' + name] = self.W[name]
+            self.var_dict['B_' + name] = self.B[name]
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
         return result
