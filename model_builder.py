@@ -35,9 +35,9 @@ def create_model(pretrain):
         CNV = enc1
 
     if pretrain is True:
-        maven.item_list.append(cv.SplitOptimizer('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 5001, 1e-4))
-        maven.item_list.append(cv.SplitOptimizer('mut', mut_T, maven.P['mut'], 'adam', 5001, 1e-4))
-        maven.item_list.append(cv.SplitOptimizer('CNV', CNV_T, maven.P['CNV'], 'adam', 5001, 1e-4))
+        maven.item_list.append(cv.SplitOptimizer('mRNA', mRNA_T, maven.P['mRNA'], 'adam', 50001, 1e-3))
+        maven.item_list.append(cv.SplitOptimizer('mut', mut_T, maven.P['mut'], 'adam', 50001, 1e-3))
+        maven.item_list.append(cv.SplitOptimizer('CNV', CNV_T, maven.P['CNV'], 'adam', 50001, 1e-3))
         maven.optimize_AEncoders()
 
     else:
@@ -54,6 +54,6 @@ def create_model(pretrain):
 
         with tf.name_scope("Data_Reconstruction"):
             pro2 = maven.data_projector(vector, 619, 1000, 'relu')
-            rec = maven.re_constructor(pro2, 'relu')
+            rec = maven.re_constructor(pro2, 'raw')
             maven.optimize_RConstructor(rec, 'adam', 20001, 1e-3)
 
