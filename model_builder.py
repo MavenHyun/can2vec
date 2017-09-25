@@ -65,6 +65,6 @@ def create_model(pretrain):
             CNV1 = maven.lesser_decoder('CNV_decT_1', 'relu', CNV)
             CNV_final = maven.lesser_decoder('CNV_decT', 'relu', CNV1)
 
-            output = tf.concat[cli, mut_final, CNV_final, mRNA_final]
+            output = tf.concat([cli, mut_final, CNV_final, mRNA_final], 0)
             maven.optimize_RConstructor(output, 'adam', 20001, 1e-3)
 
