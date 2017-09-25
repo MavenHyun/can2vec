@@ -14,9 +14,9 @@ def create_model(pretrain):
         cli = maven.not_encoder('cli')
 
     with tf.name_scope("mRNA_AEncoder"):
-        enc = maven.top_encoder('mRNA', 16000, 'relu')
-        enc1 = maven.mid_encoder('mRNA', 9000, 'relu', enc)
-        dec1 = maven.mid_decoder('mRNA', 16000, 'relu', enc1)
+        enc = maven.top_encoder('mRNA', 10000, 'relu')
+        enc1 = maven.mid_encoder('mRNA', 5000, 'relu', enc)
+        dec1 = maven.mid_decoder('mRNA', 10000, 'relu', enc1)
         mRNA_T = maven.bot_decoder('mRNA', 'relu', dec1)
         mRNA = enc1
 
@@ -49,14 +49,14 @@ def create_model(pretrain):
         #   maven.optimize_SPredictor(pre, 'adag', 5001, 1e-3)
 
         with tf.name_scope("Data_Reconstruction"):
-            mRNA = maven.data_projector(vector, 9119, 2000, 'relu')
+            mRNA = maven.data_projector(vector, 6119, 2000, 'relu')
             mRNA1 = maven.lesser_decoder('mRNA_decT_1', 'relu', mRNA)
             mRNA_final = maven.lesser_decoder('mRNA_decT', 'relu', mRNA1)
 
-            mut = maven.data_projector(vector, 9119, 100, 'relu')
+            mut = maven.data_projector(vector, 6119, 100, 'relu')
             mut_final = maven.lesser_decoder('mut_decT', 'relu', mut)
 
-            CNV = maven.data_projector(vector, 9119, 9000, 'tanh')
+            CNV = maven.data_projector(vector, 6119, 9000, 'tanh')
             CNV_final = maven.lesser_decoder('CNV_decT', 'tanh', CNV)
 
             output = tf.concat([cli, mut_final, CNV_final, mRNA_final], 0)
