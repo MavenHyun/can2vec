@@ -28,10 +28,10 @@ def create_model(pretrain):
         mut = enc
 
     with tf.name_scope("CNV_AEncoder"):
-        enc = maven.top_encoder('CNV', 1000, 'tanh')
-        enc1 = maven.mid_encoder('CNV', 100, 'tanh', enc)
-        dec1 = maven.mid_decoder('CNV', 1000, 'tanh', enc1)
-        CNV_T = maven.bot_decoder('CNV', 'tanh', dec1)
+        enc = maven.top_encoder('CNV', 1000, 'relu')
+        enc1 = maven.mid_encoder('CNV', 100, 'relu', enc)
+        dec1 = maven.mid_decoder('CNV', 1000, 'relu', enc1)
+        CNV_T = maven.bot_decoder('CNV', 'relu', dec1)
         CNV = enc1
 
     if pretrain is True:
@@ -44,7 +44,7 @@ def create_model(pretrain):
         cli = maven.data_projector(cli, 19, 19, 'relu')
         mRNA = maven.data_projector(mRNA, 400, 400, 'relu')
         mut = maven.data_projector(mut, 100, 100, 'relu')
-        CNV = maven.data_projector(CNV, 100, 100, 'tanh')
+        CNV = maven.data_projector(CNV, 100, 100, 'relu')
         vector = tf.concat([mRNA, CNV, mut, cli], 0)
 
         #with tf.name_scope("Survival_Prediction"):
@@ -54,6 +54,6 @@ def create_model(pretrain):
 
         with tf.name_scope("Data_Reconstruction"):
             pro2 = maven.data_projector(vector, 619, 5000, 'relu')
-            rec = maven.re_constructor(pro2, 'raw')
-            maven.optimize_RConstructor(rec, 'rms', 20001, 1e-9)
+            rec = maven.re_constructor(pro2, 'relu')
+            maven.optimize_RConstructor(rec, 'adam', 20001, 1e-9)
 

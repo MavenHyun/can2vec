@@ -430,14 +430,13 @@ class FarSeer:
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         for alpha_index in range(len(alpha_array)):
-
             for lambda_index in range(len(lambda_array)):
-
                 for step in range(5001):
                     with tf.Session(config=config) as sess:
                         feed_train['penaltyLambda'] = lambda_array[lambda_index]
                         feed_train['alpha'] = alpha_array[alpha_index]
-
+                        output_train = sess.run(output, feed_dict=feed_train)
+                        cindex_train = _naive_concordance_index(self.T['all'], output_train, self.T['cen'])
 
 
 
