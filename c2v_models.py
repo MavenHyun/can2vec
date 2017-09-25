@@ -121,11 +121,10 @@ class FarSeer:
         self.dec_stack[fea] += 1
         with tf.name_scope(fea + "_Decoder_L" + str(self.dec_stack[fea])):
             name = fea + '_decT_' + str(self.dec_stack[fea])
-            with tf.variable_scope(name, reuse=True):
-                self.W[name] = tf.get_variable(name='W_' + name, shape=[dim, target.get_shape()[0]],
-                                               initializer=tf.contrib.layers.xavier_initializer())
-                self.B[name] = tf.get_variable(name='B_' + name, shape=[dim, 1],
-                                               initializer=tf.contrib.layers.xavier_initializer())
+            self.W[name] = tf.get_variable(name='W_' + name, shape=[dim, target.get_shape()[0]],
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            self.B[name] = tf.get_variable(name='B_' + name, shape=[dim, 1],
+                                           initializer=tf.contrib.layers.xavier_initializer())
             result = tf.nn.dropout(black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                                       self.B[name], name='add_' + name), fun),
                                    self.drop, name='drop_' + name)
@@ -138,17 +137,21 @@ class FarSeer:
     def bot_decoder(self, fea, fun, target):
         with tf.name_scope(fea + "_Decoder"):
             name = fea + '_decT'
-            with tf.variable_scope(name, reuse=True):
-                self.W[name] = tf.get_variable(name='W_' + name, shape=[self.data.F[fea], target.get_shape()[0]],
-                                               initializer=tf.contrib.layers.xavier_initializer())
-                self.B[name] = tf.get_variable(name='B_' + name, shape=[self.data.F[fea], 1],
-                                               initializer=tf.contrib.layers.xavier_initializer())
+            self.W[name] = tf.get_variable(name='W_' + name, shape=[self.data.F[fea], target.get_shape()[0]],
+                                           initializer=tf.contrib.layers.xavier_initializer())
+            self.B[name] = tf.get_variable(name='B_' + name, shape=[self.data.F[fea], 1],
+                                           initializer=tf.contrib.layers.xavier_initializer())
             result = black_magic(tf.add(tf.matmul(self.W[name], target, name='mul_' + name),
                                         self.B[name], name='add_' + name), fun)
             self.var_dict['W_' + name] = self.W[name]
             self.var_dict['B_' + name] = self.B[name]
             tf.summary.histogram('W_' + name, self.W[name], collections=[fea])
             tf.summary.histogram('B_' + name, self.B[name], collections=[fea])
+        return result
+
+    def lesser_decoder(self, weights, bias, fun, target):
+        with tf.name_scope(weights + "_" + bias + "_Decoder"):
+            result = tf.nn.dropout(black_magic(tf.add(tf.matmul(weights, target), bias), fun), self.drop)
         return result
 
     def data_projector(self, target, dim1, dim0, fun):
