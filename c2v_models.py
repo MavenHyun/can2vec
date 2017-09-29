@@ -311,7 +311,7 @@ class FarSeer:
                     final_product = final_sum * self.data.T['cen']
                     cost = -tf.reduce_sum(final_product)
                     opti = white_magic('grad', learn, cost)
-                    c, _, summ, surv_pred, surv_real= sess.run([cost, opti, merged,result, self.P['sur']],
+                    c, _, summ, surv_pred, surv_real= sess.run([cost, opti, merged, result, self.P['sur']],
                                                                 feed_dict=self.train_dict)
                     print("Likelihood function value: ", c)
                     valid_pred, valid_real = sess.run([result, self.P['sur']], feed_dict=self.vali_dict)
@@ -447,19 +447,22 @@ class FarSeer:
             config.gpu_options.allow_growth = True
             for alpha_index in range(len(alpha_array)):
                 for lambda_index in range(len(lambda_array)):
+                    tf.global_variables_initializer()
                     for step in range(5001):
                         with tf.Session(config=config) as sess:
-                            tf.initialize_all_variables().run()
                             svnet[penalty_lambda] = lambda_array[lambda_index]
                             svnet[lasso_alpha] = alpha_array[alpha_index]
                             output_train, output_valid, output_test, _ = sess.run([output, valid_o,
                                                                                   test_o, opti], feed_dict=svnet)
                             if step % 100 == 0:
-                                cindex_train = _naive_concordance_index(self.T['all'], output_train, self.T['cen'])
-                                cindex_valid = _naive_concordance_index(self.V['all'], output_valid, self.V['cen'])
+                                cindex_train = _naive_concordance_index(self.data.T['all'][0],
+                                                                        output_train[0], self.data.T['cen'][0])
+                                cindex_valid = _naive_concordance_index(self.data.V['all'][0],
+                                                                        output_valid[0], self.data.V['cen'][0])
                                 print("SurvivalNet C-Index(T): ", cindex_train, "SurvivalNet C-Index(V)", cindex_valid)
                             if step == 5000:
-                                cindex_test = _naive_concordance_index(self.S['all'], output_test, self.S['cen'])
+                                cindex_test = _naive_concordance_index(self.data.S['all'][0],
+                                                                       output_test[0], self.data.S['cen'][0])
                                 print("SurvivalNet C-Index(S): ", cindex_test)
 
 class SplitOptimizer:
