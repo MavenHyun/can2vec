@@ -358,7 +358,7 @@ class FarSeer:
         with tf.name_scope("Survival_Net_parameters"):
             keep_prob = tf.placeholder(tf.float32)
             penalty_lambda = tf.placeholder(tf.float32)
-            alpha = tf.placeholder(tf.float32)
+            lasso_alpha = tf.placeholder(tf.float32)
 
         with tf.name_scope("Survival_Net_inputs"):
             train_input = tf.placeholder(tf.float32, [None, None])
@@ -411,18 +411,18 @@ class FarSeer:
             final_sum = tf.subtract(output, tf.log(partial_sum + 1e-50))
             final_product = final_sum * self.data.T['cen']
             cost = -tf.reduce_sum(final_product) \
-            + alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_6)) \
-            + alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_5)) \
-            + alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_4)) \
-            + alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_3)) \
-            + alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_2)) \
-            + alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_1)) \
-            + (1 - alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_6)) \
-            + (1 - alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_5)) \
-            + (1 - alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_4)) \
-            + (1 - alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_3)) \
-            + (1 - alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_2)) \
-            + (1 - alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_1))
+            + lasso_alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_6)) \
+            + lasso_alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_5)) \
+            + lasso_alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_4)) \
+            + lasso_alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_3)) \
+            + lasso_alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_2)) \
+            + lasso_alpha * tf.reduce_sum(penalty_lambda * tf.nn.l2_loss(w_1)) \
+            + (1 - lasso_alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_6)) \
+            + (1 - lasso_alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_5)) \
+            + (1 - lasso_alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_4)) \
+            + (1 - lasso_alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_3)) \
+            + (1 - lasso_alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_2)) \
+            + (1 - lasso_alpha) * tf.reduce_sum(penalty_lambda * tf.abs(w_1))
 
             valid_partial = self.cox_cummulative(valid_o, self.data.V['sur'])
             valid_sub = tf.subtract(valid_o, tf.log(valid_partial + 1e-50))
@@ -450,7 +450,7 @@ class FarSeer:
                     for step in range(5001):
                         with tf.Session(config=config) as sess:
                             svnet['penalty_lambda'] = lambda_array[lambda_index]
-                            svnet['alpha'] = alpha_array[alpha_index]
+                            svnet['lasso_alpha'] = alpha_array[alpha_index]
                             output_train, output_valid, output_test, _ = sess.run([output, valid_o,
                                                                                   test_o, opti], feed_dict=svnet)
                             if step % 100 == 0:
