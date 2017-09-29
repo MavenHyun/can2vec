@@ -355,110 +355,111 @@ class FarSeer:
                       "Evaluation Cost: ", vali_cost, "Final Learning Rate: ", learn)
 
     def SurvivalNet(self, n_hid):
-        # some parameters
-        keep_prob = tf.placeholder(tf.float32)
-        penaltyLambda = tf.placeholder(tf.float32)
-        alpha = tf.placeholder(tf.float32)
+        with tf.name_scope("Survival_Net"):
+            # some parameters
+            keep_prob = tf.placeholder(tf.float32)
+            penaltyLambda = tf.placeholder(tf.float32)
+            alpha = tf.placeholder(tf.float32)
 
-        # data
-        input = tf.placeholder(tf.float32, [None, None])
-        valid = tf.placeholder(tf.float32, [None, None])
-        test = tf.placeholder(tf.float32, [None, None])
-        svnet = {}
-        svnet['input'] = self.data.T['all']
-        svnet['valid'] = self.data.V['all']
-        svnet['test'] = self.data.S['all']
-        svnet['keep_prob'] = 1
+            # data
+            input = tf.placeholder(tf.float32, [None, None])
+            valid = tf.placeholder(tf.float32, [None, None])
+            test = tf.placeholder(tf.float32, [None, None])
+            svnet = {}
+            svnet['input'] = self.data.T['all']
+            svnet['valid'] = self.data.V['all']
+            svnet['test'] = self.data.S['all']
+            svnet['keep_prob'] = 1
 
-        # layer_1
-        w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
-        output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, input)), keep_prob)
-        valid_layer1 = tf.nn.relu(tf.matmul(w_1, valid))
-        test_layer1 = tf.nn.relu(tf.matmul(w_1, test))
+            # layer_1
+            w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
+            output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, input)), keep_prob)
+            valid_layer1 = tf.nn.relu(tf.matmul(w_1, valid))
+            test_layer1 = tf.nn.relu(tf.matmul(w_1, test))
 
-        # layer_2
-        w_2 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
-        output_layer2 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_2, output_layer1)), keep_prob)
-        valid_layer2 = tf.nn.relu(tf.matmul(w_2, valid_layer1))
-        test_layer2 = tf.nn.relu(tf.matmul(w_2, test_layer1))
+            # layer_2
+            w_2 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
+            output_layer2 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_2, output_layer1)), keep_prob)
+            valid_layer2 = tf.nn.relu(tf.matmul(w_2, valid_layer1))
+            test_layer2 = tf.nn.relu(tf.matmul(w_2, test_layer1))
 
-        # layer_3
-        w_3 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
-        output_layer3 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_3, output_layer2)), keep_prob)
-        valid_layer3 = tf.nn.relu(tf.matmul(w_3, valid_layer2))
-        test_layer3 = tf.nn.relu(tf.matmul(w_3, test_layer2))
+            # layer_3
+            w_3 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
+            output_layer3 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_3, output_layer2)), keep_prob)
+            valid_layer3 = tf.nn.relu(tf.matmul(w_3, valid_layer2))
+            test_layer3 = tf.nn.relu(tf.matmul(w_3, test_layer2))
 
-        # layer_4
-        w_4 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
-        output_layer4 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_4, output_layer3)), keep_prob)
-        valid_layer4 = tf.nn.relu(tf.matmul(w_4, valid_layer3))
-        test_layer4 = tf.nn.relu(tf.matmul(w_4, test_layer3))
+            # layer_4
+            w_4 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
+            output_layer4 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_4, output_layer3)), keep_prob)
+            valid_layer4 = tf.nn.relu(tf.matmul(w_4, valid_layer3))
+            test_layer4 = tf.nn.relu(tf.matmul(w_4, test_layer3))
 
-        # layer_5
-        w_5 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
-        output_layer5 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_5, output_layer4)), keep_prob)
-        valid_layer5 = tf.nn.relu(tf.matmul(w_5, valid_layer4))
-        test_layer5 = tf.nn.relu(tf.matmul(w_5, test_layer4))
+            # layer_5
+            w_5 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
+            output_layer5 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_5, output_layer4)), keep_prob)
+            valid_layer5 = tf.nn.relu(tf.matmul(w_5, valid_layer4))
+            test_layer5 = tf.nn.relu(tf.matmul(w_5, test_layer4))
 
-        # output layer
-        w_6 = tf.Variable(tf.truncated_normal([1, n_hid], dtype=tf.float32) / 20)
-        output = tf.matmul(w_6, output_layer5)
-        valid_o = tf.matmul(w_6, valid_layer5)
-        test_o = tf.matmul(w_6, test_layer5)
+            # output layer
+            w_6 = tf.Variable(tf.truncated_normal([1, n_hid], dtype=tf.float32) / 20)
+            output = tf.matmul(w_6, output_layer5)
+            valid_o = tf.matmul(w_6, valid_layer5)
+            test_o = tf.matmul(w_6, test_layer5)
 
-        partial_sum = self.cox_cummulative(output, self.data.T['sur'])
-        final_sum = tf.subtract(output, tf.log(partial_sum + 1e-50))
-        final_product = final_sum * self.data.T['cen']
-        cost = -tf.reduce_sum(final_product) \
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_6)) \
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_5)) \
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_4)) \
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_3)) \
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_2)) \
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_1)) \
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_6)) \
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_5)) \
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_4)) \
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_3)) \
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_2)) \
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_1))
+            partial_sum = self.cox_cummulative(output, self.data.T['sur'])
+            final_sum = tf.subtract(output, tf.log(partial_sum + 1e-50))
+            final_product = final_sum * self.data.T['cen']
+            cost = -tf.reduce_sum(final_product) \
+            + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_6)) \
+            + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_5)) \
+            + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_4)) \
+            + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_3)) \
+            + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_2)) \
+            + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_1)) \
+            + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_6)) \
+            + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_5)) \
+            + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_4)) \
+            + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_3)) \
+            + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_2)) \
+            + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_1))
 
-        valid_partial = self.cox_cummulative(valid_o, self.data.V['sur'])
-        valid_sub = tf.subtract(valid_o, tf.log(valid_partial + 1e-50))
-        valid_product = valid_sub * self.data.V['cen']
-        valid_cost = -tf.reduce_sum(valid_product)
+            valid_partial = self.cox_cummulative(valid_o, self.data.V['sur'])
+            valid_sub = tf.subtract(valid_o, tf.log(valid_partial + 1e-50))
+            valid_product = valid_sub * self.data.V['cen']
+            valid_cost = -tf.reduce_sum(valid_product)
 
-        test_partial = self.cox_cummulative(test_o, self.data.S['sur'])
-        test_sub = tf.subtract(test_o, tf.log(test_partial + 1e-50))
-        test_product = test_sub * self.data.S['cen']
-        test_cost = -tf.reduce_sum(test_product)
-        
-        global_step = tf.Variable(0, trainable=False)
-        starter_learning_rate = 0.0001
-        learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 100000, 0.989, staircase=True)
+            test_partial = self.cox_cummulative(test_o, self.data.S['sur'])
+            test_sub = tf.subtract(test_o, tf.log(test_partial + 1e-50))
+            test_product = test_sub * self.data.S['cen']
+            test_cost = -tf.reduce_sum(test_product)
 
-        opti = white_magic('grad', learning_rate, cost)
+            global_step = tf.Variable(0, trainable=False)
+            starter_learning_rate = 0.0001
+            learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step, 100000, 0.989, staircase=True)
 
-        alpha_array = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-        lambda_array = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+            opti = white_magic('grad', learning_rate, cost)
 
-        config = tf.ConfigProto()
-        config.gpu_options.allow_growth = True
-        for alpha_index in range(len(alpha_array)):
-            for lambda_index in range(len(lambda_array)):
-                for step in range(5001):
-                    with tf.Session(config=config) as sess:
-                        svnet['penaltyLambda'] = lambda_array[lambda_index]
-                        svnet['alpha'] = alpha_array[alpha_index]
-                        output_train, output_valid, output_test, _ = sess.run([output, valid_o,
-                                                                              test_o, opti], feed_dict=svnet)
-                        if step % 100 == 0:
-                            cindex_train = _naive_concordance_index(self.T['all'], output_train, self.T['cen'])
-                            cindex_valid = _naive_concordance_index(self.V['all'], output_valid, self.V['cen'])
-                            print("SurvivalNet C-Index(T): ", cindex_train, "SurvivalNet C-Index(V)", cindex_valid)
-                        if step == 5000:
-                            cindex_test = _naive_concordance_index(self.S['all'], output_test, self.S['cen'])
-                            print("SurvivalNet C-Index(S): ", cindex_test)
+            alpha_array = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+            lambda_array = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            for alpha_index in range(len(alpha_array)):
+                for lambda_index in range(len(lambda_array)):
+                    for step in range(5001):
+                        with tf.Session(config=config) as sess:
+                            svnet['penaltyLambda'] = lambda_array[lambda_index]
+                            svnet['alpha'] = alpha_array[alpha_index]
+                            output_train, output_valid, output_test, _ = sess.run([output, valid_o,
+                                                                                  test_o, opti], feed_dict=svnet)
+                            if step % 100 == 0:
+                                cindex_train = _naive_concordance_index(self.T['all'], output_train, self.T['cen'])
+                                cindex_valid = _naive_concordance_index(self.V['all'], output_valid, self.V['cen'])
+                                print("SurvivalNet C-Index(T): ", cindex_train, "SurvivalNet C-Index(V)", cindex_valid)
+                            if step == 5000:
+                                cindex_test = _naive_concordance_index(self.S['all'], output_test, self.S['cen'])
+                                print("SurvivalNet C-Index(S): ", cindex_test)
 
 class SplitOptimizer:
     def __init__(self, fea, result, answer, meth, epochs, learn):
