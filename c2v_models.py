@@ -447,14 +447,16 @@ class FarSeer:
             config.gpu_options.allow_growth = True
             for alpha_index in range(len(alpha_array)):
                 for lambda_index in range(len(lambda_array)):
-                    tf.global_variables_initializer()
-                    for step in range(5001):
-                        with tf.Session(config=config) as sess:
+                    with tf.Session(config=config) as sess:
+                        #init = tf.global_variables_initializer()
+                        #sess.run(init)
+                        tf.initialize_all_variables().run()
+                        for step in range(5001):
                             svnet[penalty_lambda] = lambda_array[lambda_index]
                             svnet[lasso_alpha] = alpha_array[alpha_index]
                             output_train, output_valid, output_test, _ = sess.run([output, valid_o,
                                                                                   test_o, opti], feed_dict=svnet)
-                            if step % 100 == 0:
+                            if step % 10 == 0:
                                 cindex_train = _naive_concordance_index(self.data.T['all'][0],
                                                                         output_train[0], self.data.T['cen'][0])
                                 cindex_valid = _naive_concordance_index(self.data.V['all'][0],
