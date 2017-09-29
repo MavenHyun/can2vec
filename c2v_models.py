@@ -362,18 +362,18 @@ class FarSeer:
             alpha = tf.placeholder(tf.float32)
 
             # data
-            input = tf.placeholder(tf.float32, [None, None])
+            train = tf.placeholder(tf.float32, [None, None])
             valid = tf.placeholder(tf.float32, [None, None])
             test = tf.placeholder(tf.float32, [None, None])
             svnet = {}
-            svnet['input'] = self.data.T['all']
+            svnet['train'] = self.data.T['all']
             svnet['valid'] = self.data.V['all']
             svnet['test'] = self.data.S['all']
             svnet['keep_prob'] = 1
 
             # layer_1
             w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
-            output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, input)), keep_prob)
+            output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, train)), keep_prob)
             valid_layer1 = tf.nn.relu(tf.matmul(w_1, valid))
             test_layer1 = tf.nn.relu(tf.matmul(w_1, test))
 
