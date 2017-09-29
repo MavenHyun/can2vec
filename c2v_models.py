@@ -362,20 +362,20 @@ class FarSeer:
             alpha = tf.placeholder(tf.float32)
 
             # data
-            train = tf.placeholder(tf.float32, [None, None])
-            valid = tf.placeholder(tf.float32, [None, None])
-            test = tf.placeholder(tf.float32, [None, None])
+            train_input = tf.placeholder(tf.float32, [None, None])
+            valid_input = tf.placeholder(tf.float32, [None, None])
+            test_input = tf.placeholder(tf.float32, [None, None])
             svnet = {}
-            svnet['train'] = self.data.T['all']
-            svnet['valid'] = self.data.V['all']
-            svnet['test'] = self.data.S['all']
+            svnet['train_input'] = self.data.T['all']
+            svnet['valid_input'] = self.data.V['all']
+            svnet['test_input'] = self.data.S['all']
             svnet['keep_prob'] = 1
 
             # layer_1
             w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
-            output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, train)), keep_prob)
-            valid_layer1 = tf.nn.relu(tf.matmul(w_1, valid))
-            test_layer1 = tf.nn.relu(tf.matmul(w_1, test))
+            output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, train_input)), keep_prob)
+            valid_layer1 = tf.nn.relu(tf.matmul(w_1, valid_input))
+            test_layer1 = tf.nn.relu(tf.matmul(w_1, test_input))
 
             # layer_2
             w_2 = tf.Variable(tf.truncated_normal([n_hid, n_hid], dtype=tf.float32) / 20)
