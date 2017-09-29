@@ -187,10 +187,10 @@ class FarSeer:
             tf.summary.histogram('B_sur', self.B['sur'], ['main'])
         return result
 
-    def cox_cummulative(self, target):
+    def cox_cummulative(self, target, target2):
         target = tf.reverse(target, [-1], name='reverse_cox')
         target = tf.exp(target, name='exp_cox')
-        target = tf.slice(target, [0, 0], [-1, self.data.T['sur'].shape[1]], name='slice_cox')
+        target = tf.slice(target, [0, 0], [-1, target2.shape[1]], name='slice_cox')
         values = tf.split(target, target.get_shape()[1], 1, name='split_cox')
         csum = tf.zeros_like(values[0], name='zeros_cox') + 1
         out = []
@@ -304,7 +304,7 @@ class FarSeer:
                 sess.run(init)
                 saver.restore(sess, "./saved/model_step1.ckpt")
                 for iter in range(epochs):
-                    partial_sum = self.cox_cummulative(result)
+                    partial_sum = self.cox_cummulative(result, self.data.T['sur'])
                     final_sum = tf.subtract(tf.log(result + 1, name='log1_cox'),
                                             tf.log(partial_sum + 1, name='log2_cox'),
                                             name='sub_cox')
@@ -406,7 +406,7 @@ class FarSeer:
         valid_o = tf.matmul(w_6, valid_layer5)
         test_o = tf.matmul(w_6, test_layer5)
 
-        partial_sum = self.cox_cummulative(output)
+        partial_sum = self.cox_cummulative(output, self.data.T['sur'])
         final_sum = tf.subtract(output, tf.log(partial_sum + 1e-50))
         final_product = final_sum * self.data.T['cen']
         cost = -tf.reduce_sum(final_product) \
@@ -423,12 +423,12 @@ class FarSeer:
         + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_2)) \
         + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_1))
 
-        valid_partial = self.cox_cummulative(valid_o)
+        valid_partial = self.cox_cummulative(valid_o, self.data.V['sur'])
         valid_sub = tf.subtract(valid_o, tf.log(valid_partial + 1e-50))
         valid_product = valid_sub * self.data.V['cen']
         valid_cost = -tf.reduce_sum(valid_product)
 
-        test_partial = self.cox_cummulative(test_o)
+        test_partial = self.cox_cummulative(test_o, self.data.S['sur'])
         test_sub = tf.subtract(test_o, tf.log(test_partial + 1e-50))
         test_product = test_sub * self.data.T['cen']
         test_cost = -tf.reduce_sum(test_product)
