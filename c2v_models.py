@@ -430,7 +430,7 @@ class FarSeer:
 
         test_partial = self.cox_cummulative(test_o, self.data.S['sur'])
         test_sub = tf.subtract(test_o, tf.log(test_partial + 1e-50))
-        test_product = test_sub * self.data.S['cen']
+        test_product = test_sub * self.data.S1['cen']
         test_cost = -tf.reduce_sum(test_product)
         
         global_step = tf.Variable(0, trainable=False)
@@ -450,7 +450,8 @@ class FarSeer:
                     with tf.Session(config=config) as sess:
                         svnet['penaltyLambda'] = lambda_array[lambda_index]
                         svnet['alpha'] = alpha_array[alpha_index]
-                        output_train, output_valid, output_test, _ = sess.run(output, valid_o, test_o, opti, feed_dict=svnet)
+                        output_train, output_valid, output_test, _ = sess.run([output, valid_o,
+                                                                              test_o, opti], feed_dict=svnet)
                         if step % 100 == 0:
                             cindex_train = _naive_concordance_index(self.T['all'], output_train, self.T['cen'])
                             cindex_valid = _naive_concordance_index(self.V['all'], output_valid, self.V['cen'])
