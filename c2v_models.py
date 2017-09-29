@@ -365,10 +365,10 @@ class FarSeer:
             valid_input = tf.placeholder(tf.float32, [None, None])
             test_input = tf.placeholder(tf.float32, [None, None])
             svnet = {}
-            svnet['train_input'] = self.data.T['all']
-            svnet['valid_input'] = self.data.V['all']
-            svnet['test_input'] = self.data.S['all']
-            svnet['keep_prob'] = 1
+            svnet[train_input] = self.data.T['all']
+            svnet[valid_input] = self.data.V['all']
+            svnet[test_input] = self.data.S['all']
+            svnet[keep_prob] = 1
 
         with tf.name_scope("Survival_Net_layers"):
             # layer_1
@@ -449,8 +449,9 @@ class FarSeer:
                 for lambda_index in range(len(lambda_array)):
                     for step in range(5001):
                         with tf.Session(config=config) as sess:
-                            svnet['penalty_lambda'] = lambda_array[lambda_index]
-                            svnet['lasso_alpha'] = alpha_array[alpha_index]
+                            tf.initialize_all_variables().run()
+                            svnet[penalty_lambda] = lambda_array[lambda_index]
+                            svnet[lasso_alpha] = alpha_array[alpha_index]
                             output_train, output_valid, output_test, _ = sess.run([output, valid_o,
                                                                                   test_o, opti], feed_dict=svnet)
                             if step % 100 == 0:
