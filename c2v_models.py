@@ -430,7 +430,7 @@ class FarSeer:
 
         test_partial = self.cox_cummulative(test_o, self.data.S['sur'])
         test_sub = tf.subtract(test_o, tf.log(test_partial + 1e-50))
-        test_product = test_sub * self.data.S1['cen']
+        test_product = test_sub * self.data.S['cen']
         test_cost = -tf.reduce_sum(test_product)
         
         global_step = tf.Variable(0, trainable=False)
