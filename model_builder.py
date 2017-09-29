@@ -61,5 +61,5 @@ def create_model(pretrain):
 
             output = tf.concat([cli, mut_final, CNV_final, mRNA_final], 0)
             recon = maven.re_constructor(output, 'raw', False)
-            maven.optimize_RConstructor(output, 'adam', 20001, 1e-3)
+            maven.optimize_RConstructor(output, 'adag', 20001, 1e-6)
 

@@ -457,12 +457,7 @@ class FarSeer:
                             print("SurvivalNet C-Index(T): ", cindex_train, "SurvivalNet C-Index(V)", cindex_valid)
                         if step == 5000:
                             cindex_test = _naive_concordance_index(self.S['all'], output_test, self.S['cen'])
-
-
-
-
-
-
+                            print("SurvivalNet C-Index(S): ", cindex_test)
 
 class SplitOptimizer:
     def __init__(self, fea, result, answer, meth, epochs, learn):
