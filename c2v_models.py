@@ -409,18 +409,18 @@ class FarSeer:
         partial_sum = self.cox_cummulative(output)
         final_sum = tf.subtract(output, tf.log(partial_sum + 1e-50))
         final_product = final_sum * self.data.T['cen']
-        cost = -tf.reduce_sum(final_product)
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_6))
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_5))
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_4))
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_3))
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_2))
-        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_1))
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_6))
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_5))
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_4))
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_3))
-        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_2))
+        cost = -tf.reduce_sum(final_product) \
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_6)) \
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_5)) \
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_4)) \
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_3)) \
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_2)) \
+        + alpha * tf.reduce_sum(penaltyLambda * tf.nn.l2_loss(w_1)) \
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_6)) \
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_5)) \
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_4)) \
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_3)) \
+        + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_2)) \
         + (1 - alpha) * tf.reduce_sum(penaltyLambda * tf.abs(w_1))
 
         valid_partial = self.cox_cummulative(valid_o)
