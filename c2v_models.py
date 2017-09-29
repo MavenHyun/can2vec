@@ -355,13 +355,14 @@ class FarSeer:
                       "Evaluation Cost: ", vali_cost, "Final Learning Rate: ", learn)
 
     def SurvivalNet(self, n_hid):
-        with tf.name_scope("Survival_Net"):
+        with tf.name_scope("Survival_Net_parameters"):
             # some parameters
             keep_prob = tf.placeholder(tf.float32)
             penaltyLambda = tf.placeholder(tf.float32)
             alpha = tf.placeholder(tf.float32)
 
             # data
+        with tf.name_scope("Survival_Net_inputs"):
             train_input = tf.placeholder(tf.float32, [None, None])
             valid_input = tf.placeholder(tf.float32, [None, None])
             test_input = tf.placeholder(tf.float32, [None, None])
@@ -371,6 +372,7 @@ class FarSeer:
             svnet['test_input'] = self.data.S['all']
             svnet['keep_prob'] = 1
 
+        with tf.name_scope("Survival_Net_layers"):
             # layer_1
             w_1 = tf.Variable(tf.truncated_normal([n_hid, self.data.features], dtype=tf.float32) / 20)
             output_layer1 = tf.nn.dropout(tf.nn.relu(tf.matmul(w_1, train_input)), keep_prob)
